@@ -1,8 +1,10 @@
 import logoWithCaption from './../Assets/chess2.png'
 import logo from './../Assets/logo.png'
-import {useThemeContext} from './Context'
+import {useThemeContext} from './../HandyComponents/Context'
 import {Link} from 'react-router-dom'
 import {Box, Button, FormLabel, Switch} from '@chakra-ui/react'
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faCog} from '@fortawesome/free-solid-svg-icons'
 import styled, {keyframes} from 'styled-components'
 import "./Sidebar.css"
 import React from 'react'
@@ -105,6 +107,10 @@ export const Sidebar = () => {
     }, 251)
   }
 
+  const SubCaption = ({children}) => {
+    return <h3 className="subCaptionStyle">{children}</h3>
+  }
+
   return (
     <Box
       bg="black"
@@ -129,8 +135,8 @@ export const Sidebar = () => {
       >
         <h2 className="captionStyle">Play</h2>
         <AppearingComponent whenDisplayed={buttonHovered.play}>
-          <Link to="/A-room"><h3 className="subCaptionStyle">Wariant A</h3></Link>
-          <Link to="/B-room"><h3 className="subCaptionStyle">Wariant B</h3></Link>
+          <Link to="/Play-A"><SubCaption>Wariant A</SubCaption></Link>
+          <Link to="/Play-B"><SubCaption>Wariant B</SubCaption></Link>
         </AppearingComponent>
       </Box>
       <Box
@@ -142,9 +148,9 @@ export const Sidebar = () => {
       >
         <h2 className="captionStyle">Learn</h2>
         <AppearingComponent whenDisplayed={buttonHovered.rules}>
-          <Link to="/technology-tree"><h3 className="subCaptionStyle">Technology tree</h3></Link>
-          <Link to="/special-tiles"><h3 className="subCaptionStyle">Special tiles</h3></Link>
-          <Link to="/fog-of-war"><h3 className="subCaptionStyle">Fog of War</h3></Link>
+          <Link to="/technology-tree"><SubCaption>Technology tree</SubCaption></Link>
+          <Link to="/special-tiles"><SubCaption>Special tiles</SubCaption></Link>
+          <Link to="/fog-of-war"><SubCaption>Fog of War</SubCaption></Link>
         </AppearingComponent>
       </Box>
       <Box
@@ -156,12 +162,12 @@ export const Sidebar = () => {
       >
         <h2 className="captionStyle">Tactics</h2>
         <AppearingComponent whenDisplayed={buttonHovered.tactics}>
-          <Link to="/puzzles"><h3 className="subCaptionStyle">Puzzles</h3></Link>
-          <Link to="/puzzle-storm"><h3 className="subCaptionStyle">Puzzle storm</h3></Link>
-          <Link to="/puzzle-dashboard"><h3 className="subCaptionStyle">Puzzle dashboard</h3></Link>
+          <Link to="/puzzles"><SubCaption>Puzzles</SubCaption></Link>
+          <Link to="/puzzle-storm"><SubCaption>Puzzle storm</SubCaption></Link>
+          <Link to="/puzzle-dashboard"><SubCaption>Puzzle dashboard</SubCaption></Link>
         </AppearingComponent>
       </Box>
-      <Link to="/new patches"><h2 className="captionStyle">New Patches</h2></Link>
+      <Link to="/new-patches"><h2 className="captionStyle">New Patches</h2></Link>
       <Box
         id="tools"
         cursor="pointer"
@@ -171,15 +177,15 @@ export const Sidebar = () => {
       >
         <h2 className="captionStyle">Tools</h2>
         <AppearingComponent whenDisplayed={buttonHovered.tools}>
-          <Link to="/computer-analysis"><h3 className="subCaptionStyle">Computer analysis</h3></Link>
-          <Link to="/board-editor"><h3 className="subCaptionStyle">Board editor</h3></Link>
-          <Link to="/import-game"><h3 className="subCaptionStyle">Import game</h3></Link>
+          <Link to="/computer-analysis"><SubCaption>Computer analysis</SubCaption></Link>
+          <Link to="/board-editor"><SubCaption>Board editor</SubCaption></Link>
+          <Link to="/import-game"><SubCaption>Import game</SubCaption></Link>
         </AppearingComponent>
       </Box>
       <FormLabel 
         className='label' 
         htmlFor='mode-label'
-        sx={{ 
+        sx={{
           margin: 3,
           fontSize: '21px',
           color: themeContext.isBright ? 'white' : 'gray'
@@ -187,20 +193,28 @@ export const Sidebar = () => {
       >
           {isHovered ? themeContext.isBright ? 'Light' : 'Dark' : ''}
       </FormLabel>
-      <Switch size='lg' id='mode-switch' isChecked={!themeContext.isBright} onChange={() => themeContext.toggleTheme(!themeContext.isBright)}/>
+      <Switch 
+        size='lg'
+        isChecked={!themeContext.isBright}
+        onChange={() => themeContext.toggleTheme(!themeContext.isBright)}
+      />
       <Button
-        variaint='outline'
         className='SidebarButton'
+        borderRadius='25px'
         style={{background: 'green'}}
       >
         Log in
       </Button>
       <Button
         className='SidebarButton'
+        borderRadius='25px'
         style={{backgroundColor: 'orange'}}
       >
         Sign up
       </Button>
+      <FontAwesomeIcon icon={faCog} />
+      {/* Settingi będą działać w taki sposób, że rozwijać się
+      będą opcje podstawowe ale będzie też opcja more settings */}
     </Box>
   );
 }

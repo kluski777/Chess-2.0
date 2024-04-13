@@ -1,13 +1,14 @@
-import {Button, Box, Table, Tbody, Thead, Th, Tr, Td} from '@chakra-ui/react'
-import {useThemeContext} from './../sidebar/Context'
+import {Button, Box, Table, Tbody, Thead, Tr, Td} from '@chakra-ui/react'
+import {useThemeContext} from '../HandyComponents/Context'
 import React from 'react'
 import {Link} from 'react-router-dom'
+import {CenteredCell} from './../HandyComponents/HandyComponents'
 
 // funkcja, która skróci program o automatyczne dodanie Linków, props-ów
 const ButtonWrapper = ({children, color, timeFormat}) => {
-  const childrenInString = React.Children.toArray(children).join('')
+  // const childrenInString = React.Children.toArray(children).join('')
   return (
-  <Link to={`/${childrenInString}`}> 
+  <Link to='/Play'> 
     <Button 
       color={color}
       _hover={{bg: 'teal.200'}}
@@ -24,15 +25,6 @@ const ButtonWrapper = ({children, color, timeFormat}) => {
   </Link>
   )
 }
-
-const CenteredCell = ({children}) => {
-  return (
-    <Td textAlign='center' borderColor='transparent'>
-      {children}
-    </Td>
-  )
-}
-
 
 const toggleVariant = ['A', 'B', 'C'] // tu powinny być nazwy wariantów.
 
@@ -57,17 +49,17 @@ export const HomePage = () => {
   // do TbodyContent dorzucić custom i drugą tabelę.
   const TbodyContent = () => {
     return <Tbody>
-      <Tr id='bullet games'>
+      <Tr id='bullet games' display='grid' gridTemplateColumns='1fr 1fr 1fr'>
         <CenteredCell><BulletGameButton>2+0</BulletGameButton></CenteredCell>
         <CenteredCell><BulletGameButton>3+0</BulletGameButton></CenteredCell>
         <CenteredCell><BulletGameButton>3+1</BulletGameButton></CenteredCell>
       </Tr>
-      <Tr id='blitz games'>
+      <Tr id='blitz games' display='grid' gridTemplateColumns='1fr 1fr 1fr'>
         <CenteredCell><BlitzGameButton>5+0</BlitzGameButton></CenteredCell>
         <CenteredCell><BlitzGameButton>5+3</BlitzGameButton></CenteredCell>
         <CenteredCell><BlitzGameButton>10+0</BlitzGameButton></CenteredCell>
       </Tr>
-      <Tr id='rapid games'>
+      <Tr id='rapid games' display='grid' gridTemplateColumns='1fr 1fr 1fr'>
         <CenteredCell><RapidGameButton>15+0</RapidGameButton></CenteredCell>
         <CenteredCell><RapidGameButton>15+5</RapidGameButton></CenteredCell>
         <CenteredCell><RapidGameButton>30+15</RapidGameButton></CenteredCell>
@@ -94,7 +86,7 @@ export const HomePage = () => {
               <Table>
                 <Tbody>
                   <Tr borderColor='transparent'>
-                    <CenteredCell>
+                    <CenteredCell width='50%'>
                       <Button 
                         variant={ !custom ? 'solid' : 'ghost' }
                         colorScheme={firstButtonOption === 'A' ? 'teal' : firstButtonOption === 'B' ? 'green' : 'red'}
@@ -112,7 +104,7 @@ export const HomePage = () => {
                         Quick {firstButtonOption} variant
                       </Button>
                     </CenteredCell>
-                    <CenteredCell>
+                    <CenteredCell width='50%'>
                       <Button
                         variant={ custom ? 'solid' : 'ghost' }
                         colorScheme='blue'
@@ -133,22 +125,27 @@ export const HomePage = () => {
         </Tbody>
         <TbodyContent/>
       </Table>
-      <Table 
+      <Table
+        id='Leaderboard and upcoming tournaments'
         position='relative'
-        width='37.5%'
-        left='calc(50%+100px)'
-        transform='translate(200px)'
-        border='5px solid gray'
+        left='50%'
+        transform='translate(-50%) translateX(100px)'
+        width='75%'
       >
         <Thead>
-          <Tr>
-            <Th textAlign='center'>
+          <Tr display='grid' gridTemplateColumns='1fr 1fr'>
+            <CenteredCell border='5px solid gray' color={value.isBright ? 'black' : 'rgb(210, 210, 210)'}>
               Leaderboard
-            </Th>
+            </CenteredCell>
+            <CenteredCell border='5px solid gray' color={value.isBright ? 'black' : 'rgb(210, 210, 210)'}>
+              Upcoming tournaments
+            </CenteredCell>
           </Tr>
         </Thead>
         <Tbody>
-          {/* Tą fukcjonalność jeszcze dodać */}
+          <Tr display='grid' gridTemplateColumns='1fr 1fr'>
+            {/* To się doda */}
+          </Tr>
         </Tbody>
       </Table>
     </Box>
