@@ -63,7 +63,7 @@ const AppearingComponent = ({whenDisplayed, children}) => {
 
 ////////////////////////////// Component itself
 export const Sidebar = () => {
-  const themeContext = useThemeContext()
+  const theme = useThemeContext()
   const [isHovered, setIsHovered] = React.useState(false)
   const [buttonHovered, setButtonHovered] = React.useState({
     play: false,
@@ -188,15 +188,15 @@ export const Sidebar = () => {
         sx={{
           margin: 3,
           fontSize: '21px',
-          color: themeContext.isBright ? 'white' : 'gray'
+          color: theme.isBright ? 'white' : 'gray'
         }}
       >
-          {isHovered ? themeContext.isBright ? 'Light' : 'Dark' : ''}
+          {isHovered ? theme.isBright ? 'Light' : 'Dark' : ''}
       </FormLabel>
       <Switch 
         size='lg'
-        isChecked={!themeContext.isBright}
-        onChange={() => themeContext.toggleTheme(!themeContext.isBright)}
+        isChecked={!theme.isBright}
+        onChange={() => theme.toggleTheme(!theme.isBright)}
       />
       <Button
         className='SidebarButton'

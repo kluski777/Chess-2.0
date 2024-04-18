@@ -8,7 +8,7 @@ import {CenteredCell} from './../HandyComponents/HandyComponents'
 const ButtonWrapper = ({children, color, timeFormat}) => {
   // const childrenInString = React.Children.toArray(children).join('')
   return (
-  <Link to='/Play'> 
+  <Link to='/Game'> 
     <Button 
       color={color}
       _hover={{bg: 'teal.200'}}

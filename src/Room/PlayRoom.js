@@ -10,7 +10,7 @@ import {useThemeContext} from '../HandyComponents/Context';
 
 export const PlayRoom = ({variant}) => {
   const [isRated, setIsRated] = React.useState(true);
-  const value = useThemeContext();
+  const theme = useThemeContext();
   const [sliderValues, setSliderValues] = React.useState({
     time: 3, 
     increment: 0
@@ -20,7 +20,8 @@ export const PlayRoom = ({variant}) => {
     increment: false
   })
   const [playWith, setPlayWith] = React.useState("Stranger")
-  // z tych wartości powyżej wypadałoby zrobić jeden wielki context.
+  // z tych wartości powyżej wypadałoby zrobić jeden wielki context,
+  // widoczny dla większości z plików
 
   const tableFont = {
     fontFamily: 'Verdana',
@@ -35,13 +36,13 @@ export const PlayRoom = ({variant}) => {
       top='25px'
       left='50%'
       transform='translate(-50%) translateX(100px)'
-      backgroundColor={value.isBright ? 'rgb(80, 182, 110)' : 'rgb(40, 91, 55)'}
+      backgroundColor={theme.isBright ? 'rgb(80, 182, 110)' : 'rgb(40, 91, 55)'}
       borderRadius='10px'
     >
       <Thead>
         <Tr>
           <CenteredCell 
-            color={value.isBright ? 'black' : 'gray'}
+            color={theme.isBright ? 'black' : 'gray'}
             fontSize='40px'
             fontFamily='Tahoma'
             fontWeight='900'
@@ -63,11 +64,11 @@ export const PlayRoom = ({variant}) => {
               onMouseLeave={() => setShowMark({...showMark, time: false})}
             >
               <SliderMark
-                value={sliderValues.time}
+                theme={sliderValues.time}
                 textAlign='center'
                 padding='1'
                 bg='transparent'
-                color={value.isBright ? 'white' : 'gray'}
+                color={theme.isBright ? 'white' : 'gray'}
                 mt='-10'
                 ml='-5'
               >
@@ -78,7 +79,7 @@ export const PlayRoom = ({variant}) => {
               </SliderTrack>
               <SliderThumb />
             </Slider>
-            <CenteredLabel color={value.isBright ? 'black' : 'white'}>
+            <CenteredLabel color={theme.isBright ? 'black' : 'white'}>
               Time
             </CenteredLabel>
           </CenteredCell>
@@ -94,23 +95,23 @@ export const PlayRoom = ({variant}) => {
               onMouseLeave={() => setShowMark({...showMark, increment: false})}
             >
               <SliderMark
-                value={sliderValues.increment}
+                theme={sliderValues.increment}
                 textAlign='center'
                 padding='1'
                 bg='transparent'
-                color={value.isBright ? 'white' : 'gray'}
+                color={theme.isBright ? 'white' : 'gray'}
                 mt='-10'
                 ml='-5'
                 w='15'
               >
-                {showMark.increment && sliderValues.increment + ' min'}
+                {showMark.increment && sliderValues.increment + ' s'}
               </SliderMark>
               <SliderTrack>
                 <SliderFilledTrack />
               </SliderTrack>
               <SliderThumb />
             </Slider>
-            <CenteredLabel color={value.isBright ? 'black' : 'white'}>
+            <CenteredLabel color={theme.isBright ? 'black' : 'white'}>
               Increment
             </CenteredLabel>
           </CenteredCell>
@@ -121,7 +122,7 @@ export const PlayRoom = ({variant}) => {
               {...tableFont}
               fontSize='19px'
               display='grid'
-              color={value.isBright ? 'black' : 'white'}
+              color={theme.isBright ? 'black' : 'white'}
               textAlign='center'
               marginBottom='10px'
             >
@@ -132,8 +133,8 @@ export const PlayRoom = ({variant}) => {
               style={tableFont}
               onChange={(v) => setPlayWith(v)}
             >
-              <option value='stranger'>Stranger</option>
-              <option value='friend'>Friend</option>
+              <option theme='stranger'>Stranger</option>
+              <option theme='friend'>Friend</option>
             </Select>
           </CenteredCell>
           <CenteredCell>
@@ -150,10 +151,10 @@ export const PlayRoom = ({variant}) => {
         </Tr>
         <Tr>
           <CenteredCell>
-            <Link to="/game">
+            <Link to="/Game">
               <Button
                 width='60%'
-                backgroundColor={value.isBright ? 'white' : 'gray'}
+                backgroundColor={theme.isBright ? 'white' : 'gray'}
               >
                 Play
               </Button>

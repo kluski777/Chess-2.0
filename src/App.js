@@ -7,7 +7,7 @@ import {PlayRoom} from './Room/PlayRoom'
 import {Game} from './Game/Game'
 
 function App() {
-  const darkOrLightMode = useThemeContext()
+  const darkOrLightMode = useThemeContext();
   const flexStyle = {
     display: "flex",
   }
@@ -17,7 +17,7 @@ function App() {
 
   const Layout = ({children}) => {
     return (
-      <div>
+      <div style={{width:'100%', height:'100%'}}>
         <Sidebar/>
         {children}
       </div>
@@ -39,7 +39,7 @@ function App() {
             <Route path="/Play-B" element={
               <PlayRoom variant='B'></PlayRoom>
             }/>
-            <Route path="/Play" element={
+            <Route path="/Game" element={
               <Game/>
             }/>
           </Routes>
