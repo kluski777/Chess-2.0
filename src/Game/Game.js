@@ -8,16 +8,18 @@ const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be ma
     height: window.innerHeight,
     width: window.innerWidth
   });
-  const [isWhiteMove, setIsWhiteMove] = React.useState(true);
+  const [moveNotation, setMoveNotation] = React.useState([]);
+  const [whitePieceList, setWhitePieceList] = React.useState(null);
+  const [blackPieceList, setBlackPieceList] = React.useState(null);
   const chessboardRef = React.useRef(null);
-  const widthAndHeightValue = windowDim.width > windowDim.height ? 0.75*windowDim.height : 0.75*windowDim.width
+  const widthAndHeightValue = windowDim.width > windowDim.height ? 0.75*windowDim.height : 0.75*windowDim.width;
   const coordsToTile = (x, y) => {
     const tileSize = widthAndHeightValue/boardSize;
     const x_tile = Math.floor( (x - 100 - windowDim.width/2 + widthAndHeightValue/2) / tileSize);
     const y_tile = Math.floor( (y - 0.45*windowDim.height + widthAndHeightValue/2) / tileSize);
     return ( [x_tile, y_tile, tileSize] );
   }
-  
+
   React.useEffect(() => {
     const handleResize = () => {
       setWindowDim({
@@ -49,18 +51,22 @@ const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be ma
           key={i}
         >
           {Array(boardSize).fill(null).map((_, j) => (
-            <Tile
+          <Tile
               id={`square-from-${i}-${j}`}
               key={`square-from-${i}-${j}`}
               i={i}
               j={j}
             >
-              <Piece 
+              <Piece
                 i={i}
                 j={j}
                 boardSize={boardSize}
                 coordsToTile={coordsToTile}
                 ref={chessboardRef}
+                moveNotation={moveNotation}
+                setMoveNotation={setMoveNotation}
+                whitePieces={{whitePieceList, setWhitePieceList}}
+                blackPieces={{blackPieceList, setBlackPieceList}}
               />
             </Tile>
           ))}
@@ -76,7 +82,6 @@ export const Game = ({...props}) => {
   return (
     <>
       <Chessboard boardSize={8}/>
-      {/* Jeszcze figury i ich reprezentacja gdzieś w jakimś arrayu, obiektach (ewentualnie) */}
     </>
   );
 }
