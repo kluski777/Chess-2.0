@@ -8,10 +8,17 @@ const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be ma
     height: window.innerHeight,
     width: window.innerWidth
   });
-  const [moveNotation, setMoveNotation] = React.useState([]);
-  const [whitePieceList, setWhitePieceList] = React.useState(null);
-  const [blackPieceList, setBlackPieceList] = React.useState(null);
+  const whitePieceList = React.useRef([]);
+  const blackPieceList = React.useState([]);
+  
+  const gameState = React.useRef({
+    check: false,
+    checkmate: false,
+    stalemate: false
+  }); // means check, checkmate and so on.
   const chessboardRef = React.useRef(null);
+  const moveNotation = React.useRef([]);
+  
   const widthAndHeightValue = windowDim.width > windowDim.height ? 0.75*windowDim.height : 0.75*windowDim.width;
   const coordsToTile = (x, y) => {
     const tileSize = widthAndHeightValue/boardSize;
@@ -64,9 +71,9 @@ const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be ma
                 coordsToTile={coordsToTile}
                 ref={chessboardRef}
                 moveNotation={moveNotation}
-                setMoveNotation={setMoveNotation}
-                whitePieces={{whitePieceList, setWhitePieceList}}
-                blackPieces={{blackPieceList, setBlackPieceList}}
+                whitePieces={whitePieceList}
+                blackPieces={blackPieceList}
+                result={gameState}
               />
             </Tile>
           ))}
@@ -77,8 +84,7 @@ const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be ma
 }
 
 export const Game = ({...props}) => {
-  // potem się doda różne wersje gry które bd iść razem z propsami.
-  
+  // potem się doda różne wersje gry które bd iść razem z propsami.  
   return (
     <>
       <Chessboard boardSize={8}/>
@@ -87,6 +93,8 @@ export const Game = ({...props}) => {
 }
 
 /* TODO 
-  1. Żeby były legalne.
-  2. Przy zmianie themu powinny zostawać czerwone square'y.
+  1. Szach.
+  2. Mat.
+  3. Pat.
+  4. Przy zmianie themu powinny zostawać czerwone square'y.
 */
