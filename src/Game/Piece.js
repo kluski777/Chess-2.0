@@ -84,7 +84,7 @@ const Piece = React.forwardRef((props, ref) => {
     } else if(!isWhite && pieceType !== null){
       props.blackPieces.current = {...props.blackPieces.current, [`${pieceType}${props.i}${props.j}`]: `${props.i}-${props.j}`};
     }
-  }, []); // nie resetuje ustawienia o dziwo.
+  }, []);
 
   const playCheck = useMoveSound('check');
   const playMove = useMoveSound('move');
@@ -137,6 +137,8 @@ const Piece = React.forwardRef((props, ref) => {
         props.result.current.check ? playCheck() : playMove();
       
       }
+
+      // props.result.current = {check: false, checkmate: false, stalemate: false};
     }
 
     // setting piece in the middle of the square

@@ -70,6 +70,7 @@ export const checkIfIllegalMove = (
     const directionOfWander = isWhite ? -1 : 1;
 
     const isOneSquareMoveLegit = () => {
+      result.current = {...result.current, pawn: finalSquares};
       return (
         move[0] === 0 &&
         move[1] === directionOfWander &&
@@ -194,7 +195,7 @@ export const checkIfIllegalMove = (
       moveNotation.current.filter( (_, index) => isWhite ? index%2 === 0 : index%2 !== 0 ).filter(val => val.startsWith("K") || val.startsWith("O")).length === 0
     ){
 
-      let rookXcoords = [] // na wypadek 960 to zbieram
+      let rookXcoords = []; // na wypadek 960 to zbieram
       const alliedColor = isWhite ? whitePieces.current : blackPieces.current;
 
       for(let elem of Object.keys(alliedColor)) {
@@ -202,7 +203,7 @@ export const checkIfIllegalMove = (
           rookXcoords.push(elem);
       }
 
-      rookXcoords = rookXcoords.map(s => alliedColor[s]).map(s => Number(s.slice(0,1)))
+      rookXcoords = rookXcoords.map(s => alliedColor[s]).map(s => Number(s.slice(0,1)));
 
       if(
         move[0] > 1 &&
@@ -290,7 +291,7 @@ export const checkIfIllegalMove = (
       default:
     }
 
-    if(!isIllegal && !justChecking) { // both does not work
+    if(!isIllegal && !justChecking) {
       if(isWhite)
         whitePieces.current = {...whitePieces.current, [pieceID]: `${finalPos[0]}-${finalPos[1]}`};
       else

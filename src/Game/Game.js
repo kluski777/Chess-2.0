@@ -2,6 +2,7 @@ import React from 'react'
 import {Box} from '@chakra-ui/react'
 import {Tile} from './Tile'
 import Piece from './Piece'
+import {useMoveSound} from './../HandyComponents/Sound';
 
 const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be many chess styles, options to play
   const [windowDim, setWindowDim] = React.useState({
@@ -9,13 +10,14 @@ const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be ma
     width: window.innerWidth
   });
   const whitePieceList = React.useRef([]);
-  const blackPieceList = React.useState([]);
+  const blackPieceList = React.useRef([]);
   
   const gameState = React.useRef({
     check: false,
     checkmate: false,
     stalemate: false
   }); // means check, checkmate and so on.
+  const playBeginSound = useMoveSound('gameStart');
   const chessboardRef = React.useRef(null);
   const moveNotation = React.useRef([]);
   
@@ -28,13 +30,15 @@ const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be ma
   }
 
   React.useEffect(() => {
+    
     const handleResize = () => {
       setWindowDim({
         height: window.innerHeight,
         width: window.innerWidth
       });
     }
-
+    
+    playBeginSound();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
