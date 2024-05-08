@@ -11,6 +11,6 @@ For now the project consists of:
 ![2. Room for searching an opponent.](https://i.imgur.com/ZNzvtCS.png)
 
 3. How gameplay looks like (not finished yet).
-![3. Gameplay website.](https://i.imgur.com/ZNzvtCS.png)
+![3. Gameplay website.](https://i.imgur.com/irQ5F6t.png)
 
 Project development is still ongoing.
