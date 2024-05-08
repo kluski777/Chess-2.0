@@ -2,24 +2,21 @@ import React from 'react'
 import {Box} from '@chakra-ui/react'
 import {Tile} from './Tile'
 import Piece from './Piece'
-import {useMoveSound} from './../HandyComponents/Sound';
 
-const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be many chess styles, options to play
+const Chessboard = ({boardSize = 8}) => {
   const [windowDim, setWindowDim] = React.useState({
     height: window.innerHeight,
     width: window.innerWidth
   });
+  const chessboardRef = React.useRef(null);
   const whitePieceList = React.useRef([]);
   const blackPieceList = React.useRef([]);
-  
+  const moveNotation = React.useRef([]);
   const gameState = React.useRef({
     check: false,
     checkmate: false,
     stalemate: false
-  }); // means check, checkmate and so on.
-  const playBeginSound = useMoveSound('gameStart');
-  const chessboardRef = React.useRef(null);
-  const moveNotation = React.useRef([]);
+  });
   
   const widthAndHeightValue = windowDim.width > windowDim.height ? 0.75*windowDim.height : 0.75*windowDim.width;
   const coordsToTile = (x, y) => {
@@ -29,16 +26,14 @@ const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be ma
     return ( [x_tile, y_tile, tileSize] );
   }
 
-  React.useEffect(() => {
-    
+  React.useEffect(() => {    
     const handleResize = () => {
       setWindowDim({
         height: window.innerHeight,
         width: window.innerWidth
       });
     }
-    
-    playBeginSound();
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -88,7 +83,7 @@ const Chessboard = ({boardSize = 8}) => { // taking boardsize bc there can be ma
 }
 
 export const Game = ({...props}) => {
-  // potem się doda różne wersje gry które bd iść razem z propsami.  
+  // potem się doda różne wersje gry które bd iść razem z propsami.
   return (
     <>
       <Chessboard boardSize={8}/>
@@ -100,5 +95,5 @@ export const Game = ({...props}) => {
   1. Szach.
   2. Mat.
   3. Pat.
-  4. Przy zmianie themu powinny zostawać czerwone square'y.
+  4. Przy zmianie theme'u powinny zostawać czerwone square'y.
 */

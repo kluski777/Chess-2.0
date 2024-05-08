@@ -26,20 +26,6 @@ const appear = keyframes`
   }
 `
 
-// const disappear = keyframes`
-//   from{
-//     opacity: 1;
-//   }
-//   to {
-//     opacity: 0;
-//   }
-// `
-
-// const DisappearingDiv = styled.div`
-//   opacity: 0;
-//   animation: ${disappear} 0.25s ease-in-out;
-// `
-
 const AppearingDiv = styled.div`
   opacity: 1;
   animation: ${appear} 0.25s ease-in-out;
@@ -54,10 +40,6 @@ const AppearingComponent = ({whenDisplayed, children}) => {
     <AppearingDiv>
       {children}
     </AppearingDiv>
-    // :
-    // <DisappearingDiv>
-    //   {/* {children} */}
-    // </DisappearingDiv>
   )
 }
 

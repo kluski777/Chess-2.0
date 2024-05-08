@@ -19,7 +19,7 @@ export const Tile = ({children, i, j, ...props}) => {
 
   return (
     <Box
-      {...props}              
+      {...props}
       id={`square-from-${i}-${j}`}
       onContextMenu={ event => {
         event.preventDefault();
@@ -35,7 +35,7 @@ export const Tile = ({children, i, j, ...props}) => {
       height='100%'
       width='100%'
       backgroundColor={tileColor}
-      border={tileColor === blackTileClickedColor ? '' : '1px solid rgb(60, 60, 60)'}
+      border='1px solid rgb(60, 60, 60)'
     >
       {children}
     </Box>

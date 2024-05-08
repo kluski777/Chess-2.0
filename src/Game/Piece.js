@@ -2,6 +2,7 @@ import React from 'react';
 import Moveable from 'react-moveable';
 import {useMoveSound} from './../HandyComponents/Sound';
 import {checkIfIllegalMove, toPieceNotation, filterOut} from './pieceLogic';
+import './piece.css';
 
 import blackRook from './../Assets/blackPieces/rook.png';
 import blackKnight from './../Assets/blackPieces/knight.png';
@@ -38,7 +39,7 @@ const isIndexLegit = (tileIndex) => {
 }
 
 const choosePiece = (props) => {
-  if( props.j === 0 ){ // depending from the player
+  if( props.j === 0 ){
     if( props.i === 0 || props.i === props.boardSize-1 )
       return [blackRook, 'rook', false];
     else if( props.i === 1 || props.i === props.boardSize-2 )
@@ -49,8 +50,7 @@ const choosePiece = (props) => {
       return [blackQueen, 'queen', false];
     else if( props.i === 4 )
       return [blackKing, 'king', false];
-  }
-  else if( props.j === 1 )
+  } else if( props.j === 1 )
     return [blackPawn, 'pawn', false];
   else if( props.j === props.boardSize-1 ){ // white pieces or black, depending from the player.
     if( props.i === 0 || props.i === props.boardSize-1 )
@@ -63,83 +63,40 @@ const choosePiece = (props) => {
       return [whiteQueen, 'queen', true];
     else if( props.i === 4 )
       return [whiteKing, 'king', true];
-  }
-  else if( props.j === props.boardSize-2)
+  } else if( props.j === props.boardSize-2)
     return [whitePawn, 'pawn', true];
   return [null, null, null];
 }
 
 const Piece = React.forwardRef((props, ref) => {
-  const [pieceGraphics, pieceType, isWhite] = choosePiece(props);
+  let [pieceLook, typeTemp, isWhite] = choosePiece(props);  // jako że isWhite nie jest refem to może się pierdolić w skrajnych przypadkach.
+  const isUpgradeOngoing = React.useRef(false);
+  const pieceType = React.useRef(typeTemp);
   const pieceImage = React.useRef(null);
   const thisNode = React.useRef(null);
+  
+  const [pieceGraphics, setPieceGraphics] = React.useState(pieceLook);
   const [dragStartPosition, setDragStartPosition] = React.useState({
     x: 0,
     y: 0
   });
-
-  React.useEffect(() => {
-    if(isWhite && pieceType !== null){
-      props.whitePieces.current = {...props.whitePieces.current, [`${pieceType}${props.i}${props.j}`]: `${props.i}-${props.j}`}
-    } else if(!isWhite && pieceType !== null){
-      props.blackPieces.current = {...props.blackPieces.current, [`${pieceType}${props.i}${props.j}`]: `${props.i}-${props.j}`};
-    }
-  }, []);
-
+  
   const playCheck = useMoveSound('check');
   const playMove = useMoveSound('move');
   const playTaking = useMoveSound('taking');
   const playCastle = useMoveSound('castle');
 
-  const pieceStyling = {
-    position: 'relative',
-    display: 'flex',
-    height: '100%',
-    width: '100%',
-    border: 'none',
-    cursor: 'pointer'
-  }
+  React.useEffect(() => {
+    if(isWhite && pieceType.current !== null){
+      props.whitePieces.current = {...props.whitePieces.current, [`${pieceType.current}${props.i}${props.j}`]: `${props.i}-${props.j}`};
+    } else if(!isWhite && pieceType.current !== null){
+      props.blackPieces.current = {...props.blackPieces.current, [`${pieceType.current}${props.i}${props.j}`]: `${props.i}-${props.j}`};
+    }
+  }, []);
 
-  const handleMove = (e) => {
+  const handleMove = async (e) => {
     const [finalXIndex, finalYIndex] = props.coordsToTile(e.clientX, e.clientY);
     const [startXIndex, startYIndex] = props.coordsToTile(dragStartPosition.x, dragStartPosition.y);
-    
-    const updateDOM = () => {
-      const castled = isWhite && props.moveNotation.current.length%2 !== 0 || !isWhite && props.moveNotation.current.length%2 === 0; 
-
-      if(props.moveNotation.current.at(-1) === 'O-O' && castled) {
-        const edge = isWhite ? props.boardSize-1 : 0;
-        const rook = ref.current.querySelector(`#figure-from-square-${props.boardSize - 1}-${edge}`);
-
-        destinationSquare = ref.current.querySelector(`#square-from-${props.boardSize - 2}-${edge}`);
-        props.result.current.check ? playCheck() : playCastle();
-        destinationSquare.appendChild(thisNode.current);
-        ref.current.querySelector(`#square-from-${props.boardSize - 3}-${edge}`).appendChild(rook);
-
-      } else if(props.moveNotation.current.at(-1) === 'O-O-O' && castled){
-        const edge = isWhite ? props.boardSize-1 : 0;
-        const rook = ref.current.querySelector(`#figure-from-square-0-${edge}`);
-
-        destinationSquare = ref.current.querySelector(`#square-from-2-${edge}`);
-        props.result.current.check ? playCheck() : playCastle();
-        destinationSquare.appendChild(thisNode.current);
-        ref.current.querySelector(`#square-from-3-${edge}`).appendChild(rook);
-
-      } else if(destinationSquare.childElementCount > 0) {
-        props.moveNotation.current = [...props.moveNotation.current, pieceTakingNotation(pieceType, [finalXIndex, finalYIndex], startXIndex)];
-        destinationSquare.replaceChildren(thisNode.current);
-        props.result.current.check ? playCheck() : playTaking();
-        filterOut((isWhite ? props.blackPieces : props.whitePieces), finalXIndex, finalYIndex);
-    
-      } else {
-        props.moveNotation.current = [...props.moveNotation.current, toPieceNotation(pieceType, finalXIndex, finalYIndex)];
-        destinationSquare.appendChild(thisNode.current);
-        props.result.current.check ? playCheck() : playMove();
-      
-      }
-
-      // props.result.current = {check: false, checkmate: false, stalemate: false};
-    }
 
     // setting piece in the middle of the square
     e.target.style.transform = "translate(0px, 0px)";
@@ -151,7 +108,7 @@ const Piece = React.forwardRef((props, ref) => {
       (isWhite && props.moveNotation.current.length%2 === 1) || // ruch białych w czarnej turze
       (!isWhite && props.moveNotation.current.length%2 === 0) || // ruch czarncyh w białej turze
       checkIfIllegalMove(
-        `${pieceType}${props.i}${props.j}`,
+        `${pieceType.current}${props.i}${props.j}`,
         isWhite,
         [startXIndex, startYIndex],
         [finalXIndex, finalYIndex],
@@ -161,42 +118,130 @@ const Piece = React.forwardRef((props, ref) => {
         props.moveNotation,
         ref.current,
         props.result
-      ) // this function also checks if it's check/mate/stalemate.
+      )
     )
       return ;
 
     let destinationSquare = ref.current.querySelector(`#square-from-${finalXIndex}-${finalYIndex}`);
-    updateDOM();
+    const castled = isWhite && props.moveNotation.current.length%2 !== 0 || !isWhite && props.moveNotation.current.length%2 === 0;
+    
+    if( props.result.current.pawn !== undefined ) {
+      isUpgradeOngoing.current = true;
+      props.result.current.pawn = finalXIndex - startXIndex;
+
+      await new Promise(resolve => {
+        const checkUpgrade = () => {
+          if (!isUpgradeOngoing.current)
+            resolve();
+          else
+            setTimeout(checkUpgrade, 100);
+        };
+        checkUpgrade();
+      });
+
+      
+      delete props.result.current.pawn;
+
+      if(pieceType.current === 'pawn')
+        return ;
+
+      // bardzo przydałyby się listy możliwych ruchów, ale tak, żeby były łatwe w użyciu.
+      if(destinationSquare.childElementCount > 0){
+        destinationSquare.replaceChildren(thisNode.current);
+        props.moveNotation.current = [...props.moveNotation.current, pieceTakingNotation('pawn', [finalXIndex, finalYIndex], startXIndex) + `=${pieceType.current.charAt(0).toUpperCase()}`];
+        filterOut((isWhite ? props.blackPieces : props.whitePieces), finalXIndex, finalYIndex);
+      } else {
+        destinationSquare.appendChild(thisNode.current);
+        props.moveNotation.current = [...props.moveNotation.current, toPieceNotation('pawn', finalXIndex, finalYIndex)  + `=${pieceType.current.charAt(0).toUpperCase()}`];
+      }
+
+      isWhite ? delete props.whitePieces.current[`pawn${props.i}${props.j}`] : delete props.blackPieces.current[`pawn${props.i}${props.j}`];
+      isWhite ? props.whitePieces.current[`${pieceType.current}${props.i}${props.j}`] = `${finalXIndex}-${finalYIndex}` : props.blackPieces.current[`${pieceType.current}${props.i}${props.j}`] = `${finalXIndex}-${finalYIndex}`; // głupi jest ten kod, trzeba to lepiej kiedyś zrobić. 
+
+    } else if(castled) { // castle
+      const edge = isWhite ? props.boardSize - 1 : 0;
+      let rook;
+      props.result.current.check ? playCheck() : playCastle();
+      
+      if(props.moveNotation.current.at(-1) === 'O-O') { // short castle
+        rook = ref.current.querySelector(`#figure-from-square-${props.boardSize - 1}-${edge}`);
+        ref.current.querySelector(`#square-from-${props.boardSize - 3}-${edge}`).appendChild(rook);
+        destinationSquare = ref.current.querySelector(`#square-from-${props.boardSize - 2}-${edge}`);
+      } else if(props.moveNotation.current.at(-1) === 'O-O-O') { // long castle
+        rook = ref.current.querySelector(`#figure-from-square-0-${edge}`);
+        ref.current.querySelector(`#square-from-3-${edge}`).appendChild(rook);
+        destinationSquare = ref.current.querySelector(`#square-from-2-${edge}`);
+      }
+      destinationSquare.appendChild(thisNode.current);
+    } else if(destinationSquare.childElementCount > 0) { // taking
+      props.moveNotation.current = [...props.moveNotation.current, pieceTakingNotation(pieceType.current, [finalXIndex, finalYIndex], startXIndex)];
+      props.result.current.check ? playCheck() : playTaking(); // na switcha?
+      destinationSquare.replaceChildren(thisNode.current);
+      filterOut((isWhite ? props.blackPieces : props.whitePieces), finalXIndex, finalYIndex);
+    } else { // rest moves
+      props.moveNotation.current = [...props.moveNotation.current, toPieceNotation(pieceType.current, finalXIndex, finalYIndex)];
+      props.result.current.check ? playCheck() : playMove();
+      destinationSquare.appendChild(thisNode.current);
+    }
+  }
+
+  const PieceToChoose = ({pieceChosen, newPieceGraphics}) => {
+    return (
+      <img
+        src={newPieceGraphics}
+        alt={`${isWhite ? 'white' : 'black'}-${pieceChosen}`}
+        className='figureToPromoteStyle'
+        onClick={() => {
+          pieceType.current = pieceChosen;
+          setPieceGraphics(newPieceGraphics);
+          isUpgradeOngoing.current = false;
+          }
+        }
+      />
+    );
   }
 
   if(pieceGraphics !== null)
     return (
       <div
-        style={pieceStyling}
+        className='pieceStyling'
         ref={thisNode}
         id={`figure-from-square-${props.i}-${props.j}`}
       >
-        <Moveable
-          draggable={true}
-          target={pieceImage}
-          onDrag={e => {
-            e.target.style.transform = e.transform
-          }}
-          onDragEnd={handleMove}
-          onDragStart={e => {
-            setDragStartPosition({
-              x: e.inputEvent.clientX,
-              y: e.inputEvent.clientY
-            })
-          }}
-        />
-        <img
-          ref={pieceImage}
-          src={pieceGraphics}
-          alt={`figure-from-square-${props.i}-${props.j}`}
-        />
+        { isUpgradeOngoing.current ?
+        <div style={{ display: 'flex', flexDirection: 'column', transform: `translate(calc(${props.result.current.pawn * 100}% - 1px) , calc(-100% - 2px))`}}> 
+          <PieceToChoose pieceChosen='bishop' newPieceGraphics={isWhite ? whiteBishop : blackBishop}/>
+          <PieceToChoose pieceChosen='knight' newPieceGraphics={isWhite ? whiteKnight : blackKnight}/>
+          <PieceToChoose pieceChosen='rook' newPieceGraphics={isWhite ? whiteRook : blackRook}/>
+          <PieceToChoose pieceChosen='queen' newPieceGraphics={isWhite ? whiteQueen : blackQueen}/>
+        </div> :
+        <>
+        {/* isInside wydaje się być fajnym propem */}
+          <Moveable 
+            draggable={true}
+            origin={false}
+            target={pieceImage}
+            onDrag={e => {
+              e.target.style.transform = e.transform
+            }}
+            onDragEnd={handleMove}
+            onDragStart={e => {
+              setDragStartPosition({
+                x: e.inputEvent.clientX,
+                y: e.inputEvent.clientY
+              })
+            }}
+          />
+          <img
+            className="moveableStyle"
+            ref={pieceImage}
+            src={pieceGraphics}
+            alt={`figure-from-square-${props.i}-${props.j}`}
+          />
+        </>
+        }
       </div>
     );
 })
 
-export default Piece; 
+export default Piece;

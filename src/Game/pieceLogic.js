@@ -70,23 +70,30 @@ export const checkIfIllegalMove = (
     const directionOfWander = isWhite ? -1 : 1;
 
     const isOneSquareMoveLegit = () => {
-      result.current = {...result.current, pawn: finalSquares};
-      return (
+      const toRet = (
         move[0] === 0 &&
         move[1] === directionOfWander &&
         !enemyPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`) &&
         !alliedPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`) &&
         (justChecking || !isSquareAttacked(kingPos))
       );
+      if(!justChecking && toRet && (isWhite ? startPos[1] === 1 : startPos[1] === boardSize-2))
+        result.current = {...result.current, pawn: pieceID};
+
+      return toRet;
     }
 
     const isTakingLegit = () => {
-      return (
+      const toRet = (
         Math.abs(move[0]) === 1 &&
         move[1] === directionOfWander &&
         (justChecking || enemyPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`)) &&
         (justChecking || !isSquareAttacked(kingPos))
       );
+      if(!justChecking && toRet && (isWhite ? startPos[1] === 1 : startPos[1] === boardSize-2))
+        result.current = {...result.current, pawn: pieceID};
+
+      return toRet;
     }
 
     const is2SquareMoveLegit = () => {
@@ -113,10 +120,10 @@ export const checkIfIllegalMove = (
       );
     }
     
-    if(isOneSquareMoveLegit() || is2SquareMoveLegit() || isTakingLegit()){
+    if( isOneSquareMoveLegit() || is2SquareMoveLegit() || isTakingLegit() ) {
       return false;
-    } else if(isEnPassantLegit()){
-      filterOut((isWhite ? blackPieces.current : whitePieces.current), finalSquares[0], finalSquares[1] - directionOfWander);
+    } else if( isEnPassantLegit() ) {
+      filterOut( isWhite ? blackPieces : whitePieces, finalSquares[0], finalSquares[1] - directionOfWander );
       refDestinationTile
         .querySelector(`#square-from-${finalSquares[0]}-${finalSquares[1] - directionOfWander}`)
         .replaceChildren();
