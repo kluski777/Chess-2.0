@@ -4,8 +4,8 @@ The main goal was to introduce a simple website together with new features of ch
 
 For now the project consists of:
 
-![1. Main page.](https://i.imgur.com/PKwqNQM)
-![2. Room for searching an opponent.](https://i.imgur.com/ZNzvtCS)
-![3. Gameplay website.](https://i.imgur.com/ZNzvtCS)
+![1. Main page.](https://i.imgur.com/PKwqNQM.png)
+![2. Room for searching an opponent.](https://i.imgur.com/ZNzvtCS.png)
+![3. Gameplay website.](https://i.imgur.com/ZNzvtCS.png)
 
 Project development is still ongoing.
