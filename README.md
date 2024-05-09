@@ -1,6 +1,6 @@
 Chess 2 website built with react framework.
 
-The main goal was to introduce a simple website together with new features of chess 2 as well as new gameplay with new pieces, 'fog of war', technology tree and special tiles (not done yet).
+The main goal was to introduce a simple website together with new features of chess 2 as well as new gameplay with new pieces, 'fog of war', technology tree and special tiles (not done yet). The site should allow the users to play against each other having a clock just like in competetive chess but with set of extra rules, pieces and features.
 
 For now the project consists of:
 
