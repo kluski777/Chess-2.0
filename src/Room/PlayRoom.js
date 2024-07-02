@@ -8,7 +8,7 @@ import {Link} from 'react-router-dom';
 import {CenteredCell, CenteredLabel} from './../HandyComponents/HandyComponents'; 
 import {useThemeContext} from '../HandyComponents/Context';
 
-export const PlayRoom = ({variant}) => {
+export const PlayRoom = ({variant, top, left, transform}) => {
   const [isRated, setIsRated] = React.useState(true);
   const theme = useThemeContext();
   const [sliderValues, setSliderValues] = React.useState({
@@ -33,10 +33,10 @@ export const PlayRoom = ({variant}) => {
     <Table
       width='75%'
       position='relative'
-      top='25px'
-      left='50%'
-      transform='translate(-50%) translateX(100px)'
-      backgroundColor={theme.isBright ? 'rgb(80, 182, 110)' : 'rgb(40, 91, 55)'}
+      top={top === undefined ? '25px' : top}
+      left={left === undefined ? '50%' : left}
+      transform={transform === undefined ? 'translate(-50%) translateX(100px)' : transform}
+      background={theme.isBright ? 'linear-gradient(to right, rgb(250, 190, 170), rgb(220, 200, 170))' : 'linear-gradient(to right, rgb(45, 60, 30), rgb(60, 45, 30))'}
       borderRadius='10px'
     >
       <Thead>
@@ -66,11 +66,10 @@ export const PlayRoom = ({variant}) => {
               <SliderMark
                 theme={sliderValues.time}
                 textAlign='center'
-                padding='1'
                 bg='transparent'
                 color={theme.isBright ? 'white' : 'gray'}
-                mt='-10'
-                ml='-5'
+                transform={'translateX(calc(-50% + 25px))'}
+                mt='-5.5%'
               >
                 {showMark.time && sliderValues.time + ' min'}
               </SliderMark>
@@ -97,12 +96,10 @@ export const PlayRoom = ({variant}) => {
               <SliderMark
                 theme={sliderValues.increment}
                 textAlign='center'
-                padding='1'
                 bg='transparent'
                 color={theme.isBright ? 'white' : 'gray'}
-                mt='-10'
-                ml='-5'
-                w='15'
+                transform={'translateX(-50%)'}
+                mt='-5.5%'
               >
                 {showMark.increment && sliderValues.increment + ' s'}
               </SliderMark>
@@ -133,7 +130,7 @@ export const PlayRoom = ({variant}) => {
               style={tableFont}
               onChange={(v) => setPlayWith(v)}
             >
-              <option theme='stranger'>Stranger</option>
+              <option theme='stranger' >Stranger</option>
               <option theme='friend'>Friend</option>
             </Select>
           </CenteredCell>
@@ -142,7 +139,7 @@ export const PlayRoom = ({variant}) => {
               style={tableFont}
               position='relative'
               textAlign='center'
-              color={isRated ? 'rgb(255, 182, 193)' : 'purple'}
+              color={isRated ? 'rgb(170, 250, 100)' : 'purple'}
             >
               {isRated ? 'Unrated' : 'Rated'}
             </FormLabel>

@@ -8,6 +8,20 @@ const getKingPos = (pieces) => {
   );
 }
 
+// export const getPossibleMoves = (
+//   pieceID,
+//   isWhite,
+//   startPos,
+//   boardSize,
+//   whitePieces,
+//   blackPieces,
+//   moveNotation,
+//   refDestinationTile,
+//   result
+// ) => {
+//   // tu wszystko będzie szło
+// }
+
 export const checkIfIllegalMove = (
   pieceID,
   isWhite,

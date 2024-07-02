@@ -20,17 +20,19 @@ export const Tile = ({children, i, j, ...props}) => {
   return (
     <Box
       {...props}
-      id={`square-from-${i}-${j}`}
-      onContextMenu={ event => {
+      onClick={() => console.log(children)}
+      onContextMenu={ event => { 
+        // dziwna sprawa z tym jest, to jest tak:
+        // jak kliknie to widzi dizecko, ale w devtools go nie ma
         event.preventDefault();
         if(tileColor === 'gray' || tileColor === 'white')
           setTileColor(whiteTileClickedColor);
         else if(tileColor === whiteTileClickedColor)
           setTileColor('white');
         else if(tileColor === blackTileColor)
-          setTileColor(blackTileClickedColor)
-        else if(tileColor === blackTileClickedColor) 
-          setTileColor(blackTileColor)
+          setTileColor(blackTileClickedColor);
+        else if(tileColor === blackTileClickedColor)
+          setTileColor(blackTileColor);
       }}
       height='100%'
       width='100%'

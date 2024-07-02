@@ -39,46 +39,67 @@ const Chessboard = ({boardSize = 8}) => {
   }, []);
 
   return (
-    <Box
-      ref={chessboardRef}
-      display='flex'
-      position='relative' 
-      height={widthAndHeightValue}
-      width={widthAndHeightValue}
-      top='45%'
-      left='calc(50% + 100px)'
-      transform='translate(-50%, -50%)'
-      border='1px solid black'
-    >
-      {Array(boardSize).fill(null).map((_, i) => (
-        <Box
-          width='100%'
-          height={`${100/boardSize}%`}
-          key={i}
-        >
-          {Array(boardSize).fill(null).map((_, j) => (
-          <Tile
-              id={`square-from-${i}-${j}`}
-              key={`square-from-${i}-${j}`}
-              i={i}
-              j={j}
-            >
-              <Piece
-                i={i}
-                j={j}
-                boardSize={boardSize}
-                coordsToTile={coordsToTile}
-                ref={chessboardRef}
-                moveNotation={moveNotation}
-                whitePieces={whitePieceList}
-                blackPieces={blackPieceList}
-                result={gameState}
-              />
-            </Tile>
-          ))}
-        </Box>
-      ))}
-    </Box>
+    <>
+      <Box
+        position='absolute'
+        width={widthAndHeightValue/boardSize}
+        height={widthAndHeightValue}
+        left={`calc(50% + 90px - ${widthAndHeightValue/2}px)`}
+        transform='translate(-50%, -50%)'
+        top='45%'
+        key={`numbers`}
+      >
+        {Array(boardSize).fill(null).map((_, i) => (
+          <h1 style={{height: `${100/boardSize}%`, top: '50%'}} key={`vertical-note-${i}`}>{boardSize - i}</h1>
+        ))}
+      </Box>
+      <Box
+        ref={chessboardRef}
+        display='flex'
+        position='relative' 
+        height={widthAndHeightValue}
+        width={widthAndHeightValue}
+        top='45%'
+        left='calc(50% + 100px)'
+        transform='translate(-50%, -50%)'
+        border='1px solid black'
+      >
+        {Array(boardSize).fill(null).map((_, i) => (
+          <Box
+            width='100%'
+            height={`${100/boardSize}%`}
+            key={i}
+          > 
+            {Array(boardSize).fill(null).map((_, j) => (
+              <React.Fragment key={`fragment-${i}-${j}`}>
+                <Tile
+                  id={`square-from-${i}-${j}`}
+                  key={`square-from-${i}-${j}`}
+                  i={i}
+                  j={j}
+                >
+                  {(j === boardSize-1 || j === boardSize-2 || j === 0 || j === 1) &&
+                  <Piece
+                    pieceID={`figure-from-square-${i}-${j}`}
+                    i={i}
+                    j={j}
+                    boardSize={boardSize}
+                    coordsToTile={coordsToTile}
+                    ref={chessboardRef}
+                    moveNotation={moveNotation}
+                    whitePieces={whitePieceList}
+                    blackPieces={blackPieceList}
+                    result={gameState}
+                  />
+                  }
+                </Tile>
+                {j === boardSize-1 && <h1 key={`horizontal-note-${i}`}>{String.fromCharCode(i + 97)}</h1>}
+              </React.Fragment>
+            ))}
+          </Box>
+        ))}
+      </Box>
+    </>
   );
 }
 

@@ -3,37 +3,41 @@ import {useThemeContext} from '../HandyComponents/Context'
 import React from 'react'
 import {Link} from 'react-router-dom'
 import {CenteredCell} from './../HandyComponents/HandyComponents'
-
-// funkcja, która skróci program o automatyczne dodanie Linków, props-ów
-const ButtonWrapper = ({children, color, timeFormat}) => {
-  // const childrenInString = React.Children.toArray(children).join('')
-  return (
-  <Link to='/Game'> 
-    <Button 
-      color={color}
-      _hover={{bg: 'teal.200'}}
-      variant='outline'
-      fontSize='26px'
-      width='100%'
-      px='10'
-      py='20'
-      borderColor="teal.200"
-    >
-      {children} <br/>
-      {timeFormat+''}
-    </Button>
-  </Link>
-  )
-}
+import {PlayRoom} from './../Room/PlayRoom'
 
 const toggleVariant = ['A', 'B', 'C'] // tu powinny być nazwy wariantów.
 
 export const HomePage = () => {
   // user is choosing which option to set, so that he'll be able to play
   const [firstButtonOption, setFirstButtonOption] = React.useState('A')
-  const [custom, setCustom] = React.useState(false)
+  const [custom, setCustom] = React.useState(false);
   const value = useThemeContext()
-  
+
+  const ButtonWrapper = ({children, color, timeFormat}) => {
+    // const childrenInString = React.Children.toArray(children).join('')
+    return (
+    <Link to='/Game' > 
+      <Button 
+        color={color}
+        _hover={{bg: 'teal.200'}}
+        variant='outline'
+        fontSize='26px'
+        width='100%'
+        px='10'
+        py='20'
+        borderColor="teal.200"
+        onClick={(e) => {
+          if(custom)
+            e.preventDefault();
+        }}
+      >
+        {children} <br/>
+        {timeFormat+''}
+      </Button>
+    </Link>
+    )
+  }
+
   const BulletGameButton = ({children}) => {
     return <ButtonWrapper timeFormat='Bullet' color={value.isBright ? 'gray.900' : 'white'}>{children}</ButtonWrapper>
   }
@@ -109,7 +113,9 @@ export const HomePage = () => {
                         variant={ custom ? 'solid' : 'ghost' }
                         colorScheme='blue'
                         color={ custom || value.isBright ? 'black' : 'white' }
-                        onClick={() => setCustom(true)}
+                        onClick={
+                          () => setCustom(true)
+                        }
                         size='lg'
                         px='35%'
                         py='10%'
@@ -125,7 +131,7 @@ export const HomePage = () => {
         </Tbody>
         <TbodyContent/>
       </Table>
-      <Table
+      {/* <Table
         id='Leaderboard and upcoming tournaments'
         position='relative'
         left='50%'
@@ -144,10 +150,27 @@ export const HomePage = () => {
         </Thead>
         <Tbody>
           <Tr display='grid' gridTemplateColumns='1fr 1fr'>
-            {/* To się doda */}
+            // wyniki najlepszych graczy.
           </Tr>
         </Tbody>
-      </Table>
+      </Table> // jak będzie serwer to to się doda */}
+      {custom && 
+        <Box
+          left='50%'
+          transform='translateX(calc(-50% + 100px))'
+          position='absolute'
+          textAlign='center'
+          alignItems='center'
+          top='20%'
+          borderRadius='50px'
+          backgroundColor='rgb(170, 200, 140)'
+          zIndex='1'
+          width='40%'
+        >
+          <PlayRoom top='0px' left='50%' transform='translateX(-50%)'/>
+          {/* TODO coś jeszcze tu powinno iść */}
+        </Box>
+      }
     </Box>
   )
 }

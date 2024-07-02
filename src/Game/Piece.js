@@ -139,7 +139,6 @@ const Piece = React.forwardRef((props, ref) => {
         checkUpgrade();
       });
 
-      
       delete props.result.current.pawn;
 
       if(pieceType.current === 'pawn')
@@ -155,8 +154,13 @@ const Piece = React.forwardRef((props, ref) => {
         props.moveNotation.current = [...props.moveNotation.current, toPieceNotation('pawn', finalXIndex, finalYIndex)  + `=${pieceType.current.charAt(0).toUpperCase()}`];
       }
 
-      isWhite ? delete props.whitePieces.current[`pawn${props.i}${props.j}`] : delete props.blackPieces.current[`pawn${props.i}${props.j}`];
-      isWhite ? props.whitePieces.current[`${pieceType.current}${props.i}${props.j}`] = `${finalXIndex}-${finalYIndex}` : props.blackPieces.current[`${pieceType.current}${props.i}${props.j}`] = `${finalXIndex}-${finalYIndex}`; // głupi jest ten kod, trzeba to lepiej kiedyś zrobić. 
+      if(isWhite){
+        delete props.whitePieces.current[`pawn${props.i}${props.j}`];
+        props.whitePieces.current[`${pieceType.current}${props.i}${props.j}`] = `${finalXIndex}-${finalYIndex}`;
+      } else {
+        delete props.blackPieces.current[`pawn${props.i}${props.j}`];
+        props.blackPieces.current[`${pieceType.current}${props.i}${props.j}`] = `${finalXIndex}-${finalYIndex}`;
+      } 
 
     } else if(castled) { // castle
       const edge = isWhite ? props.boardSize - 1 : 0;
@@ -175,7 +179,7 @@ const Piece = React.forwardRef((props, ref) => {
       destinationSquare.appendChild(thisNode.current);
     } else if(destinationSquare.childElementCount > 0) { // taking
       props.moveNotation.current = [...props.moveNotation.current, pieceTakingNotation(pieceType.current, [finalXIndex, finalYIndex], startXIndex)];
-      props.result.current.check ? playCheck() : playTaking(); // na switcha?
+      props.result.current.check ? playCheck() : playTaking();
       destinationSquare.replaceChildren(thisNode.current);
       filterOut((isWhite ? props.blackPieces : props.whitePieces), finalXIndex, finalYIndex);
     } else { // rest moves
@@ -206,7 +210,8 @@ const Piece = React.forwardRef((props, ref) => {
       <div
         className='pieceStyling'
         ref={thisNode}
-        id={`figure-from-square-${props.i}-${props.j}`}
+        id={props.pieceID}
+        key={props.pieceID}
       >
         { isUpgradeOngoing.current ?
         <div style={{ display: 'flex', flexDirection: 'column', transform: `translate(calc(${props.result.current.pawn * 100}% - 1px) , calc(-100% - 2px))`}}> 
@@ -217,13 +222,14 @@ const Piece = React.forwardRef((props, ref) => {
         </div> :
         <>
         {/* isInside wydaje się być fajnym propem */}
-          <Moveable 
+          <Moveable
             draggable={true}
             origin={false}
             target={pieceImage}
             onDrag={e => {
               e.target.style.transform = e.transform
             }}
+            hideDefaultLines={true}
             onDragEnd={handleMove}
             onDragStart={e => {
               setDragStartPosition({
