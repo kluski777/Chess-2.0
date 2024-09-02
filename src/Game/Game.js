@@ -1,14 +1,21 @@
 import React from 'react'
+import {useThemeContext} from './../HandyComponents/Context'
+import './dot.css';
 import {Box} from '@chakra-ui/react'
 import {Tile} from './Tile'
 import Piece from './Piece'
+import {usePossibleMovesContext} from './../HandyComponents/PossibleSquares'
+
 
 const Chessboard = ({boardSize = 8}) => {
+  const theme = useThemeContext();
+  const movesToPlay = usePossibleMovesContext();
   const [windowDim, setWindowDim] = React.useState({
     height: window.innerHeight,
     width: window.innerWidth
   });
   const chessboardRef = React.useRef(null);
+  
   const whitePieceList = React.useRef([]);
   const blackPieceList = React.useRef([]);
   const moveNotation = React.useRef([]);
@@ -25,6 +32,35 @@ const Chessboard = ({boardSize = 8}) => {
     const y_tile = Math.floor( (y - 0.45*windowDim.height + widthAndHeightValue/2) / tileSize);
     return ( [x_tile, y_tile, tileSize] );
   }
+
+  const createDot = (coords) => { // i, j - coordinates of the chessboard
+    const dotContainer = document.createElement('div');
+    dotContainer.id = `dot-from-${coords[0]}-${coords[1]}`; // niepotrzebne
+    dotContainer.className = "dot-container";
+    const dot = document.createElement('div');
+    dot.className = "dot";
+    dotContainer.appendChild(dot)
+    chessboardRef.current.querySelector(`#square-from-${coords[0]}-${coords[1]}`).appendChild(dotContainer);
+  }
+    
+  const clearMoveIndicators = (movesList) => {
+    if(movesList?.length > 0) {
+      for(let coords of movesList) {
+        const children = Array.from( chessboardRef.current.querySelector(`#square-from-${coords[0]}-${coords[1]}`).children );
+        for(let i in children){
+          if( children[i].className === 'dot-container' )
+            children[i].remove();
+        }
+      }
+    }
+  }
+
+  React.useEffect(() => {
+    if(movesToPlay?.list?.length > 0) {
+      for(let coords of movesToPlay.list) // jakim cudem tu się pojawia 32 dzieciaków
+        createDot(coords);
+    } 
+  }, [movesToPlay.list]);
 
   React.useEffect(() => {    
     const handleResize = () => {
@@ -50,13 +86,13 @@ const Chessboard = ({boardSize = 8}) => {
         key={`numbers`}
       >
         {Array(boardSize).fill(null).map((_, i) => (
-          <h1 style={{height: `${100/boardSize}%`, top: '50%'}} key={`vertical-note-${i}`}>{boardSize - i}</h1>
+          <h1 style={{height: `${100/boardSize}%`, top: '50%', color: theme.isBright ? 'black' : 'white'}} key={`vertical-note-${i}`}>{boardSize - i}</h1>
         ))}
       </Box>
       <Box
         ref={chessboardRef}
         display='flex'
-        position='relative' 
+        position='relative'
         height={widthAndHeightValue}
         width={widthAndHeightValue}
         top='45%'
@@ -73,8 +109,11 @@ const Chessboard = ({boardSize = 8}) => {
             {Array(boardSize).fill(null).map((_, j) => (
               <React.Fragment key={`fragment-${i}-${j}`}>
                 <Tile
+                  ref={chessboardRef}
                   id={`square-from-${i}-${j}`}
                   key={`square-from-${i}-${j}`}
+                  whitePieces={whitePieceList}
+                  blackPieces={blackPieceList}
                   i={i}
                   j={j}
                 >
@@ -90,10 +129,11 @@ const Chessboard = ({boardSize = 8}) => {
                     whitePieces={whitePieceList}
                     blackPieces={blackPieceList}
                     result={gameState}
+                    clearMoveIndicators={clearMoveIndicators}
                   />
                   }
                 </Tile>
-                {j === boardSize-1 && <h1 key={`horizontal-note-${i}`}>{String.fromCharCode(i + 97)}</h1>}
+                {j === boardSize-1 && <h1 key={`horizontal-note-${i}`} style={{color: theme.isBright ? 'black' : 'white'}}>{String.fromCharCode(i + 97)}</h1>}
               </React.Fragment>
             ))}
           </Box>

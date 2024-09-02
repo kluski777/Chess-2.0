@@ -5,7 +5,8 @@
   width: 100%;
   border: none !important;
   outline: none !important;
-  cursor: pointer
+  cursor: pointer;
+  z-index: 1;
 }
 
 .figureToPromoteStyle {

@@ -15,46 +15,86 @@ const boxStyle = {
   marginTop: "10px",
 }
 
-const appear = keyframes`
+const appear = keyframes` // fajnie byłoby dodać przyjmowanie argumentów
   0%{
     opacity: 0;
-    height: 0;
+    max-height: 0px;
+    transform: translateY(-100%) scale(0.45);
   }
   100%{
     opacity: 1;
-    height: auto;
+    max-height: 300px;
+    transform: translateY(0%) scale(1);
   }
 `
 
-const AppearingDiv = styled.div`
-  opacity: 1;
-  animation: ${appear} 0.25s ease-in-out;
-`
+const disappear = keyframes`
+  from {
+    opacity: 1;
+    max-height: 300px;
+    transform: translateY(0%) scale(1);
+  }
+  to {
+    opacity: 0;
+    max-height: 0px;
+    transform: translateY(-100%) scale(0.45);
+  }
+  `
+
+  const AppearingDiv = styled.div`
+    animation: ${appear} .75s ease-in-out;
+    animation-fill-mode: forwards;
+  `
+
+  const DisappearingDiv = styled.div`
+    animation: ${disappear} .75s;
+    animation-fill-mode: forwards;
+  `
+  
+  const MovingComponent = ({timesHovered, children}) => {
+    if(timesHovered === 0) {
+      return ;
+    } else if(timesHovered%2 === 1) {
+      return <AppearingDiv>
+          {children}
+        </AppearingDiv>
+    } else {
+      return <DisappearingDiv>
+        {children}
+      </DisappearingDiv>
+    }
+  }
 
 const logoStyle = {
   height: "128.2px"
 }
 
-const AppearingComponent = ({whenDisplayed, children}) => {
-  return (whenDisplayed &&
-    <AppearingDiv>
-      {children}
-    </AppearingDiv>
-  )
-}
-
 ////////////////////////////// Component itself
 export const Sidebar = () => {
-  const theme = useThemeContext()
-  const [isHovered, setIsHovered] = React.useState(false)
-  const [buttonHovered, setButtonHovered] = React.useState({
-    play: false,
-    rules: false,
-    tactics: false,
-    new_patches: false,
-    tools: false
-  })
-  const timer = React.useRef(null), buttonTimer = React.useRef(null) // timer for whole sidebar, buttonTimer for all buttons
+  const theme = useThemeContext();
+  const [isHovered, setIsHovered] = React.useState(false);
+  
+  // hover buttonow
+  const [playHover, setPlayHover] = React.useState(0);
+  const [rulesHover, setRulesHover] = React.useState(0);
+  const [tacticsHover, setTacticsHover] = React.useState(0);
+  const [toolsHover, setToolsHover] = React.useState(0);
+
+  const instantHover = { // regular variable not as good as useRef
+    play: React.useRef(0),
+    rules: React.useRef(0),
+    tactics: React.useRef(0),
+    tools: React.useRef(0)
+  }
+
+  const setButtonHover = {
+    play: setPlayHover,
+    rules: setRulesHover,
+    tactics: setTacticsHover,
+    tools: setToolsHover
+  }
+
+  const timer = React.useRef(null); // timer for whole sidebar | what does it represent? timer of what?
 
   const logoComponent = isHovered ? 
     <img src={logoWithCaption} style={logoStyle} alt="logo"/> : 
@@ -68,25 +108,18 @@ export const Sidebar = () => {
     }, 150)
   }
   
-  const handleSidebarMouseLeave = () => {
+  const handleSidebarMouseLeave = () => { // animacja zmniejszającej się wysokości
     clearTimeout(timer.current)
     timer.current = setTimeout(() => {
       setIsHovered(false)
     }, 150)
-    handleButtonMouseEvent({
-      play: false,
-      rules: false,
-      tactics: false,
-      new_patches: false,
-      tools: false
-    })
   }
 
-  const handleButtonMouseEvent = (toSend) => {
-    clearTimeout(buttonTimer.current)
-    buttonTimer.current = setTimeout(() => {
-      setButtonHovered(toSend)
-    }, 251)
+  const handleButtonMouseEvent = (key, timerKey) => {
+    if((instantHover[key].current%2 === 0 && timerKey === 'in') || (timerKey === 'out' && instantHover[key].current%2 === 1)) {
+      instantHover[key].current = instantHover[key].current  + 1
+      setTimeout(() => setButtonHover[key](instantHover[key].current), 250);
+    }
   }
 
   const SubCaption = ({children}) => {
@@ -112,57 +145,57 @@ export const Sidebar = () => {
         id="play"
         cursor="pointer"
         style={boxStyle}
-        onMouseEnter={() => handleButtonMouseEvent({...buttonHovered, play: true})}
-        onMouseLeave={() => handleButtonMouseEvent({...buttonHovered, play: false})}
+        onMouseEnter={() => handleButtonMouseEvent('play', 'in')}
+        onMouseLeave={() => handleButtonMouseEvent('play', 'out')}
       >
         <h2 className="captionStyle">Play</h2>
-        <AppearingComponent whenDisplayed={buttonHovered.play}>
+        <MovingComponent timesHovered={playHover}>
           <Link to="/Play-A"><SubCaption>Wariant A</SubCaption></Link>
           <Link to="/Play-B"><SubCaption>Wariant B</SubCaption></Link>
-        </AppearingComponent>
+        </MovingComponent>
       </Box>
       <Box
         id="rules"
         cursor="pointer"
         style={boxStyle}
-        onMouseEnter={() => handleButtonMouseEvent({...buttonHovered, rules: true})}
-        onMouseLeave={() => handleButtonMouseEvent({...buttonHovered, rules: false})}
+        onMouseEnter={() => handleButtonMouseEvent('rules', 'in')}
+        onMouseLeave={() => handleButtonMouseEvent('rules', 'out')}
       >
-        <h2 className="captionStyle">Learn</h2>
-        <AppearingComponent whenDisplayed={buttonHovered.rules}>
+        <h2 className="captionStyle">New rules</h2>
+        <MovingComponent timesHovered={rulesHover}>
           <Link to="/technology-tree"><SubCaption>Technology tree</SubCaption></Link>
           <Link to="/special-tiles"><SubCaption>Special tiles</SubCaption></Link>
           <Link to="/fog-of-war"><SubCaption>Fog of War</SubCaption></Link>
-        </AppearingComponent>
+        </MovingComponent>
       </Box>
       <Box
         id="tactics"
         cursor="pointer"
         style={boxStyle}
-        onMouseEnter={() => handleButtonMouseEvent({...buttonHovered, tactics: true})}
-        onMouseLeave={() => handleButtonMouseEvent({...buttonHovered, tactics: false})}
+        onMouseEnter={() => handleButtonMouseEvent('tactics', 'in')}
+        onMouseLeave={() => handleButtonMouseEvent('tactics', 'out')}
       >
         <h2 className="captionStyle">Tactics</h2>
-        <AppearingComponent whenDisplayed={buttonHovered.tactics}>
+        <MovingComponent timesHovered={tacticsHover}>
           <Link to="/puzzles"><SubCaption>Puzzles</SubCaption></Link>
           <Link to="/puzzle-storm"><SubCaption>Puzzle storm</SubCaption></Link>
           <Link to="/puzzle-dashboard"><SubCaption>Puzzle dashboard</SubCaption></Link>
-        </AppearingComponent>
+        </MovingComponent>
       </Box>
       <Link to="/new-patches"><h2 className="captionStyle">New Patches</h2></Link>
       <Box
         id="tools"
         cursor="pointer"
         style={boxStyle}
-        onMouseEnter={() => handleButtonMouseEvent({...buttonHovered, tools: true})}
-        onMouseLeave={() => handleButtonMouseEvent({...buttonHovered, tools: false})}
+        onMouseEnter={() => handleButtonMouseEvent('tools', 'in')}
+        onMouseLeave={() => handleButtonMouseEvent('tools', 'out')}
       >
         <h2 className="captionStyle">Tools</h2>
-        <AppearingComponent whenDisplayed={buttonHovered.tools}>
+        <MovingComponent timesHovered={toolsHover}>
           <Link to="/computer-analysis"><SubCaption>Computer analysis</SubCaption></Link>
           <Link to="/board-editor"><SubCaption>Board editor</SubCaption></Link>
           <Link to="/import-game"><SubCaption>Import game</SubCaption></Link>
-        </AppearingComponent>
+        </MovingComponent>
       </Box>
       <FormLabel 
         className='label' 
@@ -173,7 +206,7 @@ export const Sidebar = () => {
           color: theme.isBright ? 'white' : 'gray'
         }}
       >
-          {isHovered ? theme.isBright ? 'Light' : 'Dark' : ''}
+          {isHovered ? (theme.isBright ? 'Light' : 'Dark') : ''}
       </FormLabel>
       <Switch 
         size='lg'

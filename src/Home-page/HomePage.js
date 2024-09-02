@@ -1,9 +1,16 @@
-import {Button, Box, Table, Tbody, Thead, Tr, Td} from '@chakra-ui/react'
+import {Button, Box, Table, Tbody, Tr, Td} from '@chakra-ui/react'
 import {useThemeContext} from '../HandyComponents/Context'
 import React from 'react'
 import {Link} from 'react-router-dom'
 import {CenteredCell} from './../HandyComponents/HandyComponents'
 import {PlayRoom} from './../Room/PlayRoom'
+
+import darkBackground from './../Assets/mainPage/darkBackground.jpg'
+import brightBackground from './../Assets/mainPage/brightMode.jpg'
+
+// WIEDZIEĆ KIEDY SIDEBAR JEST A KIEDY NIE JEST ROZWINIETY 
+// Rerender taki jak trzeba po zmianie theme'u 
+// w tle będzie szła szachownica nieskończona
 
 const toggleVariant = ['A', 'B', 'C'] // tu powinny być nazwy wariantów.
 
@@ -11,15 +18,14 @@ export const HomePage = () => {
   // user is choosing which option to set, so that he'll be able to play
   const [firstButtonOption, setFirstButtonOption] = React.useState('A')
   const [custom, setCustom] = React.useState(false);
-  const value = useThemeContext()
+  const theme = useThemeContext();
 
-  const ButtonWrapper = ({children, color, timeFormat}) => {
-    // const childrenInString = React.Children.toArray(children).join('')
-    return (
+  const ButtonWrapper = ({children, color, timeFormat, hoverColor}) => {
+  return (
     <Link to='/Game' > 
       <Button 
         color={color}
-        _hover={{bg: 'teal.200'}}
+        _hover={{bg: hoverColor}}
         variant='outline'
         fontSize='26px'
         width='100%'
@@ -39,15 +45,15 @@ export const HomePage = () => {
   }
 
   const BulletGameButton = ({children}) => {
-    return <ButtonWrapper timeFormat='Bullet' color={value.isBright ? 'gray.900' : 'white'}>{children}</ButtonWrapper>
+    return <ButtonWrapper timeFormat='Bullet' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#DF0000' : '#8A0000'}>{children}</ButtonWrapper>
   }
   
   const BlitzGameButton = ({children}) => {
-    return <ButtonWrapper timeFormat='Blitz' color={value.isBright ? 'gray.900' : 'white'}>{children}</ButtonWrapper>
+    return <ButtonWrapper timeFormat='Blitz' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#FFAA00' : '#AA6600'}>{children}</ButtonWrapper>
   }
   
   const RapidGameButton = ({children}) => {
-    return <ButtonWrapper timeFormat='Rapid' color={value.isBright ? 'gray.900' : 'white'}>{children}</ButtonWrapper>
+    return <ButtonWrapper timeFormat='Rapid' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#AAAAAA' : '#555555'}>{children}</ButtonWrapper>
   }
 
   // do TbodyContent dorzucić custom i drugą tabelę.
@@ -72,9 +78,13 @@ export const HomePage = () => {
   }
 
   return (
-    <Box>
+    <Box
+      backgroundImage={theme.isBright ? brightBackground : darkBackground}
+      backgroundRepeat="Repeat"
+      backgroundSize="100px"
+    >
       <Table
-        opacity={0.5}
+        opacity={0.9}
         position='relative'
         width='75%'
         left='calc((100% + 200px)/2)'
@@ -82,7 +92,7 @@ export const HomePage = () => {
         border='5px solid gray.800'
         top='10px'
         marginBottom='25px'
-        backgroundColor={value.isBright ? 'gray.300' : 'gray.600'}
+        backgroundColor={theme.isBright ? 'gray.300' : 'gray.600'}
       >
         <Tbody>
           <Tr>
@@ -94,8 +104,7 @@ export const HomePage = () => {
                       <Button 
                         variant={ !custom ? 'solid' : 'ghost' }
                         colorScheme={firstButtonOption === 'A' ? 'teal' : firstButtonOption === 'B' ? 'green' : 'red'}
-                        opacity='1'
-                        color={ !custom || value.isBright ? 'black' : 'white' }
+                        color={ !custom || theme.isBright ? 'black' : 'white' }
                         onClick={() => {
                           if(!custom)
                             setFirstButtonOption(toggleVariant[(toggleVariant.indexOf(firstButtonOption)+1)%toggleVariant.length])
@@ -112,10 +121,8 @@ export const HomePage = () => {
                       <Button
                         variant={ custom ? 'solid' : 'ghost' }
                         colorScheme='blue'
-                        color={ custom || value.isBright ? 'black' : 'white' }
-                        onClick={
-                          () => setCustom(true)
-                        }
+                        color={ custom || theme.isBright ? 'black' : 'white' }
+                        onClick={() => setCustom(true)}
                         size='lg'
                         px='35%'
                         py='10%'
@@ -140,10 +147,10 @@ export const HomePage = () => {
       >
         <Thead>
           <Tr display='grid' gridTemplateColumns='1fr 1fr'>
-            <CenteredCell border='5px solid gray' color={value.isBright ? 'black' : 'rgb(210, 210, 210)'}>
+            <CenteredCell border='5px solid gray' color={theme.isBright ? 'black' : 'rgb(210, 210, 210)'}>
               Leaderboard
             </CenteredCell>
-            <CenteredCell border='5px solid gray' color={value.isBright ? 'black' : 'rgb(210, 210, 210)'}>
+            <CenteredCell border='5px solid gray' color={theme.isBright ? 'black' : 'rgb(210, 210, 210)'}>
               Upcoming tournaments
             </CenteredCell>
           </Tr>
@@ -155,20 +162,35 @@ export const HomePage = () => {
         </Tbody>
       </Table> // jak będzie serwer to to się doda */}
       {custom && 
+        // Tutaj box jak się kliknie to Box znika tj. setCustom(false)
         <Box
-          left='50%'
-          transform='translateX(calc(-50% + 100px))'
-          position='absolute'
-          textAlign='center'
+          top='0px'
+          right='0px'
+          left='0px'
+          width='100%'
+          height='100vh'
+          display="flex"
           alignItems='center'
-          top='20%'
-          borderRadius='50px'
-          backgroundColor='rgb(170, 200, 140)'
-          zIndex='1'
-          width='40%'
+          justifyContent='center'
+          position="absolute"
+          background='rgba(0, 0, 0, 0.25)'
+          onClick={() => {setCustom(false)}}
         >
-          <PlayRoom top='0px' left='50%' transform='translateX(-50%)'/>
-          {/* TODO coś jeszcze tu powinno iść */}
+          <Box
+            left='50%'
+            transform='translateX(calc(-50% + 100px))'
+            position='absolute'
+            textAlign='center'
+            top='20%'
+            borderRadius='35px'
+            backgroundColor='rgb(170, 200, 140)'
+            zIndex='1'
+            width='60%'
+            onClick={(event) => {event.stopPropagation();}}
+          >
+            <PlayRoom top='0px' left='50%' transform='translateX(-50%)'/>
+            {/* TODO coś jeszcze tu powinno iść */}
+          </Box>
         </Box>
       }
     </Box>

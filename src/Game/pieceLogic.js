@@ -1,26 +1,181 @@
 // Pure JS logic checking if moves are legit or aren't
 
-const getKingPos = (pieces) => {
+export const getKingPos = (pieces) => {
   return (Object.entries(pieces)
-    .filter(([key, _]) => key.startsWith('king'))
-    .map(([_, val]) => val)
-    .map(val => val.split('-').map(f => Number(f))).flat()
+    .find(([piece, ]) => piece.startsWith('king'))[1]
+    .split('-')
+    .map(f => Number(f))
   );
 }
 
-// export const getPossibleMoves = (
-//   pieceID,
-//   isWhite,
-//   startPos,
-//   boardSize,
-//   whitePieces,
-//   blackPieces,
-//   moveNotation,
-//   refDestinationTile,
-//   result
-// ) => {
-//   // tu wszystko będzie szło
-// }
+export const getPossibleMoves = (
+  pieceID,
+  isWhite,
+  startPos,
+  boardsize,
+  whitePieces,
+  blackPieces,
+  moveNotation,
+  result,
+  justChecking = false
+) => {
+  let toRet = [];
+
+  const simplifiedCheckIfIllegal = (finalPos) => {
+    return checkIfIllegalMove(
+      pieceID,
+      isWhite,
+      startPos,
+      finalPos,
+      boardsize,
+      whitePieces,
+      blackPieces,
+      moveNotation,
+      result,
+      justChecking // true when checking if there is a check on the king
+    );
+  }
+  
+  const addMoves = (positions) => {
+    for(let position of positions){
+      if( !simplifiedCheckIfIllegal(position) )
+        toRet.push( position );
+    }
+  }
+
+  const checkRook = () => {
+    let directions = [true, true, true, true];
+      let rookI=1;
+
+      while( directions.some(Boolean) ){
+          const position = [
+            [startPos[0] + rookI, startPos[1]],
+            [startPos[0] - rookI, startPos[1]],
+            [startPos[0], startPos[1] + rookI],
+            [startPos[0], startPos[1] - rookI]
+          ];
+
+          for(let j=0; j<4; j++){
+            if( directions[j] && !simplifiedCheckIfIllegal( position[j] ) )
+              toRet.push( position[j] );
+            else
+              directions[j] = false
+          }
+  
+          rookI++;
+      }
+  }
+
+  const checkBishop = () => {
+    let directions = [true, true, true, true];
+    let bishopI=1;
+
+    while( directions.some(Boolean) ){
+      const position = [
+        [startPos[0] + bishopI, startPos[1] + bishopI],
+        [startPos[0] - bishopI, startPos[1] + bishopI],
+        [startPos[0] + bishopI, startPos[1] - bishopI],
+        [startPos[0] - bishopI, startPos[1] - bishopI]
+      ];
+
+      for(let j=0; j<4; j++){
+        if( directions[j] && !simplifiedCheckIfIllegal( position[j] ) )
+          toRet.push( position[j] );
+        else
+          directions[j] = false
+      }
+
+      bishopI++;
+    }
+  }
+
+  switch(pieceID){
+    case 'pawn':
+      let direction = isWhite ? -1 : 1;
+
+      if(justChecking) {
+        const left = [startPos[0] - 1, startPos[1] + direction];
+        const right = [startPos[0] + 1, startPos[1] + direction];
+        if( left[0] > 0 && left[0] < boardsize && left[1] > 0 && left[1] < boardsize )
+          toRet.push(left);
+        if( right[0] > 0 && right[0] < boardsize && right[1] > 0 && right[1] < boardsize )
+          toRet.push(right);
+      } else {
+        const movesPawn = [
+          [startPos[0], startPos[1] + direction],
+          [startPos[0], startPos[1] + 2*direction],
+          [startPos[0] - 1, startPos[1] + direction],
+          [startPos[0] + 1, startPos[1] + direction]
+        ];
+        addMoves(movesPawn);
+      }
+      break;
+
+    case 'knight':
+      const movesKnight = [ // Nie wszystkie ruchy mają sens
+        [startPos[0] + 1, startPos[1] + 2],
+        [startPos[0] + 1, startPos[1] - 2],
+        [startPos[0] - 1, startPos[1] + 2],
+        [startPos[0] - 1, startPos[1] - 2],
+        [startPos[0] + 2, startPos[1] + 1],
+        [startPos[0] + 2, startPos[1] - 1],
+        [startPos[0] - 2, startPos[1] + 1],
+        [startPos[0] - 2, startPos[1] - 1],
+      ];
+
+      if(justChecking) {
+        // pytanie czy opłaca się filtrować czy nie
+        toRet.push( ...movesKnight );
+      } else {
+        addMoves(movesKnight);
+      }
+      break;
+
+    case 'bishop':
+      checkBishop();
+      break;
+
+    case 'rook':
+      checkRook();
+      break;
+
+    case 'king':
+      const movesKing = [
+        [startPos[0] + 1, startPos[1] + 1],
+        [startPos[0] + 1, startPos[1]],
+        [startPos[0], startPos[1] + 1],
+        [startPos[0] - 1, startPos[1] + 1],
+        [startPos[0] + 1, startPos[1] - 1],
+        [startPos[0] - 1, startPos[1]],
+        [startPos[0], startPos[1] - 1],
+        [startPos[0] - 1, startPos[1] - 1]
+      ];
+      
+      if(justChecking) {
+        // pytanie czy opłaca się filtrować czy nie
+        toRet.push( ...movesKing.filter(f => f[0] > 0 && f[0] < boardsize && f[1] > 0 && f[1] < boardsize) );
+      } else {
+        const castling = [
+          [startPos[0] + 2, startPos[1]],
+          [startPos[0] - 2, startPos[1]]
+        ];
+
+        addMoves(movesKing);
+        addMoves(castling);
+      }
+      break;
+
+    case 'queen':
+      checkRook();
+      checkBishop();
+      break;
+      
+    default:
+      throw new Error("I don't know the piece type");
+  }
+  
+  return toRet;
+}
 
 export const checkIfIllegalMove = (
   pieceID,
@@ -31,18 +186,19 @@ export const checkIfIllegalMove = (
   whitePieces,
   blackPieces,
   moveNotation,
-  refDestinationTile,
-  result
+  result,
+  justChecking = false
 ) => {
+  if(finalPos[0] >= boardSize || finalPos[0] < 0 || finalPos[1] >= boardSize || finalPos[1] < 0)
+    return true;
+  
   let enemyPieces = isWhite ? Object.values(blackPieces.current) : Object.values(whitePieces.current);
   let alliedPieces = isWhite ? Object.values(whitePieces.current) : Object.values(blackPieces.current);
-  let justChecking = false;
 
   const pieceType = pieceID.replace(/[0-9]+/g, "");
   const squareChange = [ finalPos[0] - startPos[0], finalPos[1] - startPos[1] ];
   const kingPos = isWhite ? getKingPos(whitePieces.current) : getKingPos(blackPieces.current);
-  const enemyKingPos = isWhite ? getKingPos(blackPieces.current) : getKingPos(whitePieces.current);
-
+  
   const changePosTemporary = (pieces, pieceWasMoved) => {
     return (
       pieceWasMoved ?
@@ -83,35 +239,22 @@ export const checkIfIllegalMove = (
   const pawn = (isWhite, move, finalSquares) => {
     const directionOfWander = isWhite ? -1 : 1;
 
-    const isOneSquareMoveLegit = () => {
-      const toRet = (
+    const isOneSquareMoveLegit = (
         move[0] === 0 &&
         move[1] === directionOfWander &&
         !enemyPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`) &&
         !alliedPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`) &&
         (justChecking || !isSquareAttacked(kingPos))
       );
-      if(!justChecking && toRet && (isWhite ? startPos[1] === 1 : startPos[1] === boardSize-2))
-        result.current = {...result.current, pawn: pieceID};
 
-      return toRet;
-    }
-
-    const isTakingLegit = () => {
-      const toRet = (
+    const isTakingLegit = (
         Math.abs(move[0]) === 1 &&
         move[1] === directionOfWander &&
         (justChecking || enemyPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`)) &&
         (justChecking || !isSquareAttacked(kingPos))
       );
-      if(!justChecking && toRet && (isWhite ? startPos[1] === 1 : startPos[1] === boardSize-2))
-        result.current = {...result.current, pawn: pieceID};
 
-      return toRet;
-    }
-
-    const is2SquareMoveLegit = () => {
-      return (
+    const is2SquareMoveLegit =  (
         move[0] === 0 &&
         move[1] === directionOfWander*2 &&
         finalSquares[1] - move[1] === (isWhite ? boardSize-2 : 1) &&
@@ -121,10 +264,8 @@ export const checkIfIllegalMove = (
         !alliedPieces.includes(`${finalSquares[0]}-${finalSquares[1] - directionOfWander}`) &&
         (justChecking || !isSquareAttacked(kingPos))
       );
-    }
 
-    const isEnPassantLegit = () => {
-      return (
+    const isEnPassantLegit = (
         Math.abs(move[0]) === 1 &&
         move[1] === directionOfWander &&
         enemyPieces.includes(`${finalSquares[0]}-${finalSquares[1] - directionOfWander}`) &&
@@ -132,15 +273,13 @@ export const checkIfIllegalMove = (
         moveNotation.current.at(-1) === toPieceNotation('pawn', finalSquares[0], finalSquares[1] - directionOfWander) &&
         (justChecking || !isSquareAttacked(kingPos))
       );
-    }
     
-    if( isOneSquareMoveLegit() || is2SquareMoveLegit() || isTakingLegit() ) {
+    if( isOneSquareMoveLegit || is2SquareMoveLegit || isTakingLegit ) {
+      if(!justChecking && (isWhite ? finalPos[1] === 0 : finalPos[1] === boardSize-1)) // available for promotion
+        result.current = {...result.current, pawn: startPos};
       return false;
-    } else if( isEnPassantLegit() ) {
-      filterOut( isWhite ? blackPieces : whitePieces, finalSquares[0], finalSquares[1] - directionOfWander );
-      refDestinationTile
-        .querySelector(`#square-from-${finalSquares[0]}-${finalSquares[1] - directionOfWander}`)
-        .replaceChildren();
+    } else if( isEnPassantLegit ) {
+      result.current['enPassant'] = finalSquares;
       return false;
     }
     return true;
@@ -152,19 +291,21 @@ export const checkIfIllegalMove = (
       (justChecking || !alliedPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`)) &&
       (justChecking || !isSquareAttacked(kingPos))
     ){
-      const directX = -Math.sign(move[0]);
-      const directY = -Math.sign(move[1]);
+      const directX = Math.sign(move[0]);
+      const directY = Math.sign(move[1]);
       let i = move[0];
       let j = move[1];
 
       while(Math.abs(i) !== 1 && Math.abs(j) !== 1){
-        i += directX;
-        j += directY;
-        
+        i -= directX;
+        j -= directY;
+        console.log(`Checking  ${startSquares[0] + i} - ${startSquares[1] + j} `);
+
         const square = `${startSquares[0] + i}-${startSquares[1] + j}`;
         if( alliedPieces.includes(square) || enemyPieces.includes(square) )
           return true;
       }
+      console.log("\n");
       return false;
     }
     return true;
@@ -188,10 +329,11 @@ export const checkIfIllegalMove = (
     return true;
   }
 
-  const knight = (move) => {
+  const knight = (move, finalSquares) => {
     if(
       ((Math.abs(move[0]) === 1 && Math.abs(move[1]) === 2) ||
       (Math.abs(move[0]) === 2 && Math.abs(move[1]) === 1)) &&
+      !alliedPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`) &&
       (justChecking || !isSquareAttacked(kingPos))
     ){
       return false;
@@ -212,7 +354,7 @@ export const checkIfIllegalMove = (
     else if( // castling
       Math.abs(move[0]) > 1 && 
       move[1] === 0 && 
-      !result.current.check &&
+      !result.current.check && // tu coś się pierdzieli
       moveNotation.current.filter( (_, index) => isWhite ? index%2 === 0 : index%2 !== 0 ).filter(val => val.startsWith("K") || val.startsWith("O")).length === 0
     ){
 
@@ -277,9 +419,9 @@ export const checkIfIllegalMove = (
         moveNotation.current = [...moveNotation.current, 'O-O-O'];
 
         if(isWhite)
-          whitePieces.current = {...whitePieces.current, [`rook0${boardSize-1}`]: `${finalPos[0] + 1}-${finalPos[1]}`};
+          whitePieces.current[`rook0${boardSize-1}`] = `${finalPos[0] + 1}-${finalPos[1]}`;
         else
-          blackPieces.current = {...blackPieces.current, [`rook00`]: `${finalPos[0] + 1}-${finalPos[1]}`};
+          blackPieces.current[`rook00`] = `${finalPos[0] + 1}-${finalPos[1]}`;
 
         return false;
       }
@@ -298,7 +440,7 @@ export const checkIfIllegalMove = (
         isIllegal = bishop(move, finalSquares, startSquares);
         break;
       case 'knight':
-        isIllegal = knight(move);
+        isIllegal = knight(move, finalSquares);
         break;
       case 'rook':
         isIllegal = rook(move, finalSquares, startSquares);
@@ -310,17 +452,6 @@ export const checkIfIllegalMove = (
         isIllegal = king(move, finalSquares);
         break;
       default:
-    }
-
-    if(!isIllegal && !justChecking) {
-      if(isWhite)
-        whitePieces.current = {...whitePieces.current, [pieceID]: `${finalPos[0]}-${finalPos[1]}`};
-      else
-        blackPieces.current = {...blackPieces.current, [pieceID]: `${finalPos[0]}-${finalPos[1]}`};
-
-      isWhite = !isWhite;
-      result.current = {...result.current, check: isSquareAttacked(enemyKingPos, false)};
-      isWhite = !isWhite;
     }
 
     return isIllegal;

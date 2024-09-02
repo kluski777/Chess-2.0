@@ -8,6 +8,8 @@ import {Link} from 'react-router-dom';
 import {CenteredCell, CenteredLabel} from './../HandyComponents/HandyComponents'; 
 import {useThemeContext} from '../HandyComponents/Context';
 
+// daj tło w małe szachownice
+
 export const PlayRoom = ({variant, top, left, transform}) => {
   const [isRated, setIsRated] = React.useState(true);
   const theme = useThemeContext();
@@ -55,7 +57,7 @@ export const PlayRoom = ({variant, top, left, transform}) => {
           <CenteredCell style={tableFont}>
             <Slider 
               defaultValue={3} 
-              colorScheme="orange"
+              colorScheme="blue"
               min={1}
               max={60}
               step={1}
@@ -69,7 +71,7 @@ export const PlayRoom = ({variant, top, left, transform}) => {
                 bg='transparent'
                 color={theme.isBright ? 'white' : 'gray'}
                 transform={'translateX(calc(-50% + 25px))'}
-                mt='-5.5%'
+                mt='-15%'
               >
                 {showMark.time && sliderValues.time + ' min'}
               </SliderMark>
@@ -99,7 +101,7 @@ export const PlayRoom = ({variant, top, left, transform}) => {
                 bg='transparent'
                 color={theme.isBright ? 'white' : 'gray'}
                 transform={'translateX(-50%)'}
-                mt='-5.5%'
+                mt='-15%'
               >
                 {showMark.increment && sliderValues.increment + ' s'}
               </SliderMark>
@@ -114,18 +116,18 @@ export const PlayRoom = ({variant, top, left, transform}) => {
           </CenteredCell>
         </Tr>
         <Tr display='grid' gridTemplateColumns='1fr 1fr'>
-          <CenteredCell style={tableFont}>
+          <CenteredCell padding='0px 3px 0px 3px' display='flex' justifyContent='center' alignItems='center' flexDirection='column'>
             <CenteredLabel
               {...tableFont}
               fontSize='19px'
               display='grid'
               color={theme.isBright ? 'black' : 'white'}
               textAlign='center'
-              marginBottom='10px'
+              margin='0px 0px 10px 0px'
             >
               With whom to play?
             </CenteredLabel>
-            <Select 
+            <Select
               defaultValue="stranger" 
               style={tableFont}
               onChange={(v) => setPlayWith(v)}
@@ -134,10 +136,11 @@ export const PlayRoom = ({variant, top, left, transform}) => {
               <option theme='friend'>Friend</option>
             </Select>
           </CenteredCell>
-          <CenteredCell>
+          <CenteredCell padding='0px' display='flex' justifyContent='center' alignItems='center' flexDirection='column'>
             <FormLabel
               style={tableFont}
               position='relative'
+              margin='0px 0px 10px 0px'
               textAlign='center'
               color={isRated ? 'rgb(170, 250, 100)' : 'purple'}
             >
