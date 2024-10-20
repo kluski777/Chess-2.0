@@ -1,0 +1,30 @@
+.pieceStyling {
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.figureToPromoteStyle {
+  z-index: 1;
+  height: 100%;
+  border-radius: 50%;
+  background-color: gray;
+  margin-bottom: 2px;
+  padding: 8px;
+}
+
+.figureToPromoteStyle:hover {
+  padding: 0;
+  border-radius: 0;
+  background-color: orange;
+}
+
+.moveableStyle {
+  border: none !important;
+  outline: none !important;
+}
