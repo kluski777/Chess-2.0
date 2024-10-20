@@ -1,9 +1,9 @@
 import {Button, Box, Table, Tbody, Tr, Td} from '@chakra-ui/react'
-import {useThemeContext} from '../HandyComponents/Context'
+import {useThemeContext} from '../HandyComponents/themeContext'
 import React from 'react'
 import {Link} from 'react-router-dom'
 import {CenteredCell} from './../HandyComponents/HandyComponents'
-import {PlayRoom} from './../Room/PlayRoom'
+import {CustomGame} from './../Room/CustomGame'
 
 import darkBackground from './../Assets/mainPage/darkBackground.jpg'
 import brightBackground from './../Assets/mainPage/brightMode.jpg'
@@ -16,13 +16,13 @@ const toggleVariant = ['A', 'B', 'C'] // tu powinny być nazwy wariantów.
 
 export const HomePage = () => {
   // user is choosing which option to set, so that he'll be able to play
+  
   const [firstButtonOption, setFirstButtonOption] = React.useState('A')
   const [custom, setCustom] = React.useState(false);
   const theme = useThemeContext();
 
   const ButtonWrapper = ({children, color, timeFormat, hoverColor}) => {
-  return (
-    <Link to='/Game' > 
+    return ( 
       <Button 
         color={color}
         _hover={{bg: hoverColor}}
@@ -40,9 +40,10 @@ export const HomePage = () => {
         {children} <br/>
         {timeFormat+''}
       </Button>
-    </Link>
     )
   }
+
+
 
   const BulletGameButton = ({children}) => {
     return <ButtonWrapper timeFormat='Bullet' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#DF0000' : '#8A0000'}>{children}</ButtonWrapper>
@@ -188,11 +189,11 @@ export const HomePage = () => {
             width='60%'
             onClick={(event) => {event.stopPropagation();}}
           >
-            <PlayRoom top='0px' left='50%' transform='translateX(-50%)'/>
-            {/* TODO coś jeszcze tu powinno iść */}
+            <CustomGame top='0px' left='50%' transform='translateX(-50%)'/>
           </Box>
         </Box>
       }
     </Box>
+    // jeśli jest zalogowany to na dole będzie profil z potencjalnym zapisem wszystkich gier które zagrał
   )
 }

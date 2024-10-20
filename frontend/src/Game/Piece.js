@@ -22,11 +22,11 @@ const pieceTakingNotation = (pieceType, finalSquares, startXSquare) => {
   let toRet = "";
 
   if(pieceType === 'pawn'){
-    toRet += String.fromCharCode(startXSquare + 97) + "";
+    toRet += String.fromCharCode(startXSquare + 97) + '';
   } else if(pieceType === 'knight'){
     toRet += "N";
   } else {
-    toRet += pieceType[0].toUpperCase() + "";
+    toRet += pieceType[0].toUpperCase() + '';
   }
 
   toRet += 'x';
@@ -96,7 +96,7 @@ const Piece = React.forwardRef((props, ref) => {
     else
       props.blackPieces.current[`${pieceType.current}${props.i}${props.j}`] = `${props.i}-${props.j}`;
   }, []);
-  
+
   // Casting to array then cutting numbers from keys and converting position in string into numbers
   const parsePieces = ( pieces, isPieceIDNeeded = false ) => Object.entries( pieces ).map(tuple => ({
     type: isPieceIDNeeded ? tuple[0] : tuple[0].replace(/\d+/g, ''), 
@@ -214,52 +214,16 @@ const Piece = React.forwardRef((props, ref) => {
   }
 
   React.useEffect(() => {
-    console.log(`transform: translate((${props.result.current.pawn?.x * 100}% , ${props.result.current.pawn?.y * 100}%)`)
     upgradeOngoingRef.current = isUpgradeOngoing; // a need for ref in waitForChange (newest value) and rerender thus both state and ref are needed
   }, [isUpgradeOngoing]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   const executeMove = async (targetX, targetY, dotPositions = movesToPlay.list) => {
     // Clear move indicators (dots) on the board
     props.clearMoveIndicators(dotPositions);
 
     let destinationSquare = ref.current.querySelector(`#square-from-${targetX}-${targetY}`);
-    const { pawnPromotion } = props.result.current; // if pawn is not undefined then pawn promotion is possible
 
-    if (isPawnPromotion(startX, startY, pawnPromotion)) {
+    if (isPawnPromotion(targetY)) {
       await handlePawnPromotion(targetX, targetY, destinationSquare);
     } else if (isCastlingMove()) {
       handleCastlingMove(targetX, targetY, destinationSquare);
@@ -272,17 +236,14 @@ const Piece = React.forwardRef((props, ref) => {
     finalizeMove(targetX, targetY, destinationSquare);
   };
 
-  const isPawnPromotion = (startX, startY, pawn) => {
-    return pawn !== undefined && pawn[0] === startX && pawn[1] === startY;
+  const isPawnPromotion = (targetY) => {
+    return isWhite ? targetY === 0 : targetY === props.boardSize - 1;
   };
 
   const handlePawnPromotion = async (targetX, targetY, destinationSquare) => {
     setIsUpgradeOngoing(true);
-    props.result.current.pawn = { x: targetX - startX, y: targetY - startY };
-
     // Wait for the state to change (promotion selection)
     await waitForCondition(() => !upgradeOngoingRef.current);
-    delete props.result.current.pawn;
     await waitForCondition(() => upgradeOngoingRef.current);
 
     const notation = destinationSquare.childElementCount > 0
@@ -378,38 +339,6 @@ const Piece = React.forwardRef((props, ref) => {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   const checkIfThisColorMoves = () => (isWhite && props.moveNotation.current.length%2 !== 0) || (!isWhite && props.moveNotation.current.length%2 === 0)
 
   const handleMove = async (e) => {
@@ -463,7 +392,7 @@ const Piece = React.forwardRef((props, ref) => {
         // here I should add something so that pointing will work as expected
       >
         { isUpgradeOngoing ?
-        <div style={{ display: 'flex', flexDirection: 'column', transform: `translate((${props.result.current.pawn.x * 100}% , ${props.result.current.pawn.y * 100}%)`}}> 
+        <div style={{ display: 'flex', flexDirection: 'column'}}> 
           <PieceToChoose pieceChosen='bishop' newPieceGraphics={isWhite ? whiteBishop : blackBishop}/>
           <PieceToChoose pieceChosen='knight' newPieceGraphics={isWhite ? whiteKnight : blackKnight}/>
           <PieceToChoose pieceChosen='rook' newPieceGraphics={isWhite ? whiteRook : blackRook}/>
