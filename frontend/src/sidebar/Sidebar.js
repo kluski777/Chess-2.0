@@ -1,7 +1,6 @@
 import logoWithCaption from './../Assets/chess2.png'
 import logo from './../Assets/logo.png'
-import { useLogContext } from '../HandyComponents/LogContext'
-import {useThemeContext} from './../HandyComponents/themeContext'
+import {useThemeContext} from './../HandyComponents/Context'
 import {Link} from 'react-router-dom'
 import {Box, Button, FormLabel, Switch} from '@chakra-ui/react'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
@@ -73,8 +72,7 @@ const logoStyle = {
 ////////////////////////////// Component itself
 export const Sidebar = () => {
   const theme = useThemeContext();
-  const log = useLogContext();
-  const [isHovered, setIsHovered] = React.useState(false); // can do context out of that
+  const [isHovered, setIsHovered] = React.useState(false);
   
   // hover buttonow
   const [playHover, setPlayHover] = React.useState(0);
@@ -117,8 +115,6 @@ export const Sidebar = () => {
     }, 150)
   }
 
-  // this function gotta be modified, sometimes caption do not get unrolled
-  // i.e. state is odd and ref is even
   const handleButtonMouseEvent = (key, timerKey) => {
     if((instantHover[key].current%2 === 0 && timerKey === 'in') || (timerKey === 'out' && instantHover[key].current%2 === 1)) {
       instantHover[key].current = instantHover[key].current  + 1
@@ -217,33 +213,20 @@ export const Sidebar = () => {
         isChecked={!theme.isBright}
         onChange={() => theme.toggleTheme(!theme.isBright)}
       />
-      <Link to="/Logging">
-        <Button
-          width="64px"
-          marginTop='10px'
-          bgGradient="linear(to-r, teal.400, blue.500)"
-          color={theme.isBright ? 'white' : '#EEEEEE'}
-          _hover={{ bgGradient: 'linear(to-r, teal.500, blue.600)', boxShadow: 'xl' }}
-          onClick={() => log.setLogState({option: 'Log in'})}
-          borderRadius="full"
-        >
-          Log in
-        </Button>
-      </Link>
-      <Link to="/Logging">
-        <Button
-          width="64px"
-          className='SidebarButton'
-          margin='10px 0px 10px 0px'
-          bgGradient="linear(to-l, #AA8A63, #CA74AA)"
-          _hover={{ bgGradient: "linear(to-r, #9A7A53, #BA649A)", boxShadow: 'xl' }}
-          onClick={() => log.setLogState({option: 'Sign Up'})}
-          color={theme.isBright ? 'white' : '#EEEEEE'}
-          borderRadius='full'
-        >
-          Sign up
-        </Button>
-      </Link>
+      <Button
+        className='SidebarButton'
+        borderRadius='25px'
+        style={{background: 'green'}}
+      >
+        Log in
+      </Button>
+      <Button
+        className='SidebarButton'
+        borderRadius='25px'
+        style={{backgroundColor: 'orange'}}
+      >
+        Sign up
+      </Button>
       <FontAwesomeIcon icon={faCog} />
       {/* Settingi będą działać w taki sposób, że rozwijać się
       będą opcje podstawowe ale będzie też opcja more settings */}

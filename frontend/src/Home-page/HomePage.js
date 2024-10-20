@@ -1,9 +1,9 @@
 import {Button, Box, Table, Tbody, Tr, Td} from '@chakra-ui/react'
-import {useThemeContext} from '../HandyComponents/themeContext'
+import {useThemeContext} from '../HandyComponents/Context'
 import React from 'react'
 import {Link} from 'react-router-dom'
 import {CenteredCell} from './../HandyComponents/HandyComponents'
-import {CustomGame} from './../Room/CustomGame'
+import {PlayRoom} from './../Room/PlayRoom'
 
 import darkBackground from './../Assets/mainPage/darkBackground.jpg'
 import brightBackground from './../Assets/mainPage/brightMode.jpg'
@@ -16,7 +16,6 @@ const toggleVariant = ['A', 'B', 'C'] // tu powinny być nazwy wariantów.
 
 export const HomePage = () => {
   // user is choosing which option to set, so that he'll be able to play
-  
   const [firstButtonOption, setFirstButtonOption] = React.useState('A')
   const [custom, setCustom] = React.useState(false);
   const theme = useThemeContext();
@@ -189,11 +188,11 @@ export const HomePage = () => {
             width='60%'
             onClick={(event) => {event.stopPropagation();}}
           >
-            <CustomGame top='0px' left='50%' transform='translateX(-50%)'/>
+            <PlayRoom top='0px' left='50%' transform='translateX(-50%)'/>
+            {/* TODO coś jeszcze tu powinno iść */}
           </Box>
         </Box>
       }
     </Box>
-    // jeśli jest zalogowany to na dole będzie profil z potencjalnym zapisem wszystkich gier które zagrał
   )
 }

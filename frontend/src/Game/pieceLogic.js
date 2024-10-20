@@ -299,11 +299,13 @@ export const checkIfIllegalMove = (
       while(Math.abs(i) !== 1 && Math.abs(j) !== 1){
         i -= directX;
         j -= directY;
-        
+        console.log(`Checking  ${startSquares[0] + i} - ${startSquares[1] + j} `);
+
         const square = `${startSquares[0] + i}-${startSquares[1] + j}`;
         if( alliedPieces.includes(square) || enemyPieces.includes(square) )
           return true;
       }
+      console.log("\n");
       return false;
     }
     return true;

@@ -1,18 +1,20 @@
 import './App.css';
-import React from 'react'
-import { Sidebar } from './sidebar/Sidebar';
+import {Sidebar} from './sidebar/Sidebar';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
-import { HomePage } from './Home-page/HomePage'
-import { CustomGame } from './Room/CustomGame'
-import { Game } from './Game/Game'
-import { LoggingContainer } from './Login/LoggingContainer'
-import { useLogContext } from './HandyComponents/LogContext'
+import {HomePage} from './Home-page/HomePage'
+import {useThemeContext} from './HandyComponents/Context'
+import {PlayRoom} from './Room/PlayRoom'
+import {Game} from './Game/Game'
 
 function App() {
+  const darkOrLightMode = useThemeContext();
   const flexStyle = {
     display: "flex",
   }
- 
+  const backgroundColor = {
+    backgroundColor: darkOrLightMode.isBright ? 'white' : 'rgb( 20, 20, 20)',
+  }
+
   const Layout = ({children}) => {
     return (
       <div style={{width:'100%', height:'100%'}}>
@@ -22,26 +24,23 @@ function App() {
     )
   }
 
-  const Logger = React.memo(() => (<LoggingContainer/>));
-
   return (
-    <div
+    <div 
       className="App"
+      style={backgroundColor}
     >
       <Router>
         <Layout>
           <Routes>
-            {/* jeszcze landing page tutaj pójdzie */}
             <Route path="/" style={flexStyle} Component={HomePage}/>
             <Route path="/Play-A" element={
-              <CustomGame variant='A'/>
+              <PlayRoom variant='A'/>
             }/>
             <Route path="/Play-B" element={
-              <CustomGame variant='B'/>
+              <PlayRoom variant='B'></PlayRoom>
             }/>
-            <Route path="/Game" element={Game}/>
-            <Route path="/logging" element={
-              <Logger/>
+            <Route path="/Game" element={
+              <Game/>
             }/>
           </Routes>
         </Layout>

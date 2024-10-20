@@ -23,3 +23,8 @@
   font-family: Arial;
   color: gray;
 }
+
+.SidebarButton {
+  margin: 10px;
+  width: 75%;
+} 

@@ -1,20 +1,19 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, forwardRef} from 'react';
 import {Box} from '@chakra-ui/react';
-import {useThemeContext} from './../HandyComponents/themeContext';
+import {useThemeContext} from './../HandyComponents/Context';
 import {usePossibleMovesContext} from './../HandyComponents/PossibleSquares'
 
 const blackBrightColor = 'rgb(60, 60, 120)';
 const blackDarkColor = 'rgb(40, 40, 90)'
-// const blackLeftClickedColor = 'rgb(70, 120, 70)';
+const blackLeftClickedColor = 'rgb(70, 120, 70)';
 const blackRightClickedColor = 'rgb(240, 60, 60)';
 
 const whiteBrightColor = 'white';
 const whiteDarkColor = 'gray';
-// const whiteLeftClickedColor = 'rgb(255, 150, 150)';
+const whiteLeftClickedColor = 'rgb(255, 150, 150)';
 const whiteRightClickedColor = 'red';
 
-
-export const Tile = ({i, j, children, whitePieces, blackPieces, ...props}) => {
+export const Tile = forwardRef(({i, j, children, whitePieces, blackPieces, ...props}, ref) => {
   const moveList = usePossibleMovesContext();
   const thisElementRef = useRef(null);
   const theme = useThemeContext();
@@ -66,4 +65,4 @@ export const Tile = ({i, j, children, whitePieces, blackPieces, ...props}) => {
         {children}
       </Box>
   );
-};
+});
