@@ -1,16 +1,16 @@
 import './App.css';
 import React from 'react'
 import { Sidebar } from './sidebar/Sidebar';
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { HomePage } from './Home-page/HomePage'
 import { CustomGame } from './Room/CustomGame'
 import { Game } from './Game/Game'
 import { LoggingContainer } from './Login/LoggingContainer'
-import { useLogContext } from './HandyComponents/LogContext'
 
 function App() {
   const flexStyle = {
     display: "flex",
+    height: "100%",
   }
  
   const Layout = ({children}) => {
@@ -39,10 +39,9 @@ function App() {
             <Route path="/Play-B" element={
               <CustomGame variant='B'/>
             }/>
-            <Route path="/Game" element={Game}/>
-            <Route path="/logging" element={
-              <Logger/>
-            }/>
+            <Route path="/Game" element={<Game/>}/>
+            <Route path="/logging" element={<Logger/>}/>
+            {/* to do modyfikacji leci */}
           </Routes>
         </Layout>
       </Router>

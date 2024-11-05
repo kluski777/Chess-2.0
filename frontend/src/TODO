@@ -1,7 +1,13 @@
 1. Pushować na gita
 2. Email confirmation
 3. 2 users playing:
-    I)      Dodanie pokoju, w którym siedzą userzy. [TERAZ]
-    II)     Możliwość taka w ogóle ( jak to sprawdzić? )
+    I)      Dodanie pokoju, w którym siedzą userzy. [Jest tylko sie buguje]
+    II)     Dodanie komunikacji WebSocket [TERAZ]
     III)    Dodanie czasu
-4. landing site.
+    IV)     Daleka przyszlosc - dodanie komunikacji WebSocket + WebRTC żeby odciążyć serwer
+4. landing site. (nope).
+5. Bugs to be fixed - dangling request in the homePage fetching for pairing constantly.
+
+
+# białe są na dole zawsze, nawet jak są czarne xD
+# czarne zawsze są na górze

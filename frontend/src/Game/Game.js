@@ -7,12 +7,15 @@ import {Box} from '@chakra-ui/react'
 import {Tile} from './Tile'
 import Piece from './Piece'
 import {possibleMovesContext} from './../HandyComponents/PossibleSquares'
+import {useLogContext} from '../HandyComponents/LogContext';
 
 class Chessboard extends React.PureComponent {
   static contextType = possibleMovesContext; // movesToPlay context
 
-  constructor({boardSize = 8}){
+  constructor({isUserWhite, opponent, boardSize = 8}){ // tu musi pójść uogólnienie - zmiana wszystkiego tak naprawdę
     super();
+    this.isUserWhite = isUserWhite;
+    this.opponent = opponent;
     this.boardSize = boardSize;
     this.state = {
       windowDim: {
@@ -23,15 +26,15 @@ class Chessboard extends React.PureComponent {
     this.widthAndHeightValue = this.state.windowDim.width > this.state.windowDim.height ? 0.75*this.state.windowDim.height : 0.75*this.state.windowDim.width;
 
     this.chessboardRef = React.createRef();
-    this.whitePieceList = React.createRef();
-    this.blackPieceList = React.createRef();
+    this.playerPieceList = React.createRef();
+    this.opponentPieceList = React.createRef();
     this.moveNotation = React.createRef();
     this.gameState = React.createRef();
   }
 
   componentDidMount() {
-    this.whitePieceList.current = [];
-    this.blackPieceList.current = [];
+    this.playerPieceList.current = [];
+    this.opponentPieceList.current = [];
     this.moveNotation.current = [];
     this.gameState.current = {
       check: false,
@@ -49,7 +52,7 @@ class Chessboard extends React.PureComponent {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount() { 
     window.removeEventListener('resize', this.handleResize);
   }
 
@@ -65,6 +68,19 @@ class Chessboard extends React.PureComponent {
             backgroundColor={theme.isBright ? '#BBBBBB' : '#223322'}
           >
             <Box
+              position="absolute"
+              border="1px solid black"
+              height="100px"
+              width="100px"
+              transform="translateX(50%)"
+              backgroundColor='rgba(180, 180, 180, 0.7)'
+              top={`calc(45% - ${this.widthAndHeightValue/2}px)`}
+              left={`calc(50% + ${this.widthAndHeightValue/2 + this.widthAndHeightValue/this.boardSize}px)`}
+            >
+              <h1>{this.opponent?.user}</h1>
+              <h1>{this.opponent?.rating}</h1>
+            </Box>
+            <Box
               position='absolute'
               width={this.widthAndHeightValue/this.boardSize}
               height={this.widthAndHeightValue}
@@ -74,7 +90,7 @@ class Chessboard extends React.PureComponent {
               key={`numbers`}
               >
               {Array(this.boardSize).fill(null).map((_, i) => (
-                <h1 style={{height: `${100/this.boardSize}%`, top: '50%', color: theme.isBright ? 'black' : 'white'}} key={`vertical-note-${i}`}>{this.boardSize - i}</h1>
+                <h1 style={{height: `${100/this.boardSize}%`, top: '50%', color: theme.isBright ? 'black' : 'white'}} key={`vertical-note-${i}`}>{this.isUserWhite ? this.boardSize-i : i+1}</h1>
               ))}
             </Box>
             <Box
@@ -98,9 +114,8 @@ class Chessboard extends React.PureComponent {
                     <React.Fragment key={`fragment-${i}-${j}`}>
                       <Tile
                         id={`square-from-${i}-${j}`}
-                        key={`square-from-${i}-${j}`}
-                        whitePieces={this.whitePieceList}
-                        blackPieces={this.blackPieceList}
+                        whitePieces={this.playerPieceList}
+                        blackPieces={this.opponentPieceList}
                         i={i}
                         j={j}
                       >
@@ -109,12 +124,13 @@ class Chessboard extends React.PureComponent {
                             pieceID={`figure-from-square-${i}-${j}`}
                             i={i}
                             j={j}
+                            isUserWhite={this.isUserWhite}
                             boardSize={this.boardSize}
                             coordsToTile={this.coordsToTile}
                             ref={this.chessboardRef}
                             moveNotation={this.moveNotation}
-                            whitePieces={this.whitePieceList}
-                            blackPieces={this.blackPieceList}
+                            whitePieces={this.playerPieceList}
+                            blackPieces={this.opponentPieceList}
                             result={this.gameState}
                             clearMoveIndicators={this.clearMoveIndicators}
                           />
@@ -172,10 +188,12 @@ class Chessboard extends React.PureComponent {
 }
 
 export const Game = ({...props}) => {
+  const logState = useLogContext();
+  
   // potem się doda różne wersje gry które bd iść razem z propsami.
   return (
     <>
-      <Chessboard boardSize={8}/>
+      <Chessboard boardSize={8} isUserWhite={logState.logState.isUserWhite} opponent={logState.logState.opponent} />
     </>
   );
 }

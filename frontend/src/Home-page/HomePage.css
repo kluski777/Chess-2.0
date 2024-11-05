@@ -1,0 +1,17 @@
+.loader {
+    width: 50px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 10px solid transparent;
+    background: rgb(145, 70, 145);
+    --_m: 
+      conic-gradient(#0000 30%,#000),
+      linear-gradient(#000 0 0) padding-box;
+      /* linear-gradient zamalowuje conic gradient tworzy ksztalt */
+    -webkit-mask: var(--_m);
+            mask: var(--_m);
+    -webkit-mask-composite: source-out;
+            mask-composite: subtract;
+    animation: turn 1s infinite linear;
+}
+@keyframes turn {to{transform: rotate(1turn)}}

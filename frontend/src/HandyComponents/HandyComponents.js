@@ -3,6 +3,7 @@ import {Td, FormLabel} from '@chakra-ui/react';
 export const CenteredCell = ({children, ...props}) => {
   return (
     <Td 
+      padding="20px"
       textAlign='center'
       borderColor='transparent'
       {...props}

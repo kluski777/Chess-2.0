@@ -12,6 +12,7 @@ import React from 'react'
 
 ////////////////////////////// Css styles for components.
 const boxStyle = {
+  width: '100% !important',
   marginBottom: "10px",
   marginTop: "10px",
 }
@@ -43,11 +44,13 @@ const disappear = keyframes`
   `
 
   const AppearingDiv = styled.div`
+    width: 100%;
     animation: ${appear} .75s ease-in-out;
     animation-fill-mode: forwards;
   `
 
   const DisappearingDiv = styled.div`
+    width: 100%;
     animation: ${disappear} .75s;
     animation-fill-mode: forwards;
   `
@@ -81,6 +84,7 @@ export const Sidebar = () => {
   const [rulesHover, setRulesHover] = React.useState(0);
   const [tacticsHover, setTacticsHover] = React.useState(0);
   const [toolsHover, setToolsHover] = React.useState(0);
+  const [logOutHover, setLogOutHover] = React.useState(0);
 
   const instantHover = { // regular variable not as good as useRef
     play: React.useRef(0),
@@ -133,13 +137,14 @@ export const Sidebar = () => {
   return (
     <Box
       bg="black"
-      width={isHovered ? "200px" : "84.5px"}
+      width={isHovered ? "200px" : "100px"}
       height="100%"
       display="flex"
       flexDirection="column"
       position="fixed"
       justifyContent="spaceBetween"
       alignItems="center"
+      zIndex={10}
       transition="width 0.35s"
       onMouseEnter = {handleSidebarMouseEnter}
       onMouseLeave = {handleSidebarMouseLeave}
@@ -148,6 +153,7 @@ export const Sidebar = () => {
       <Box
         id="play"
         cursor="pointer"
+        width="100%"
         style={boxStyle}
         onMouseEnter={() => handleButtonMouseEvent('play', 'in')}
         onMouseLeave={() => handleButtonMouseEvent('play', 'out')}
@@ -161,6 +167,7 @@ export const Sidebar = () => {
       <Box
         id="rules"
         cursor="pointer"
+        width="100%"
         style={boxStyle}
         onMouseEnter={() => handleButtonMouseEvent('rules', 'in')}
         onMouseLeave={() => handleButtonMouseEvent('rules', 'out')}
@@ -175,6 +182,7 @@ export const Sidebar = () => {
       <Box
         id="tactics"
         cursor="pointer"
+        width="100%"
         style={boxStyle}
         onMouseEnter={() => handleButtonMouseEvent('tactics', 'in')}
         onMouseLeave={() => handleButtonMouseEvent('tactics', 'out')}
@@ -186,10 +194,11 @@ export const Sidebar = () => {
           <Link to="/puzzle-dashboard"><SubCaption>Puzzle dashboard</SubCaption></Link>
         </MovingComponent>
       </Box>
-      <Link to="/new-patches"><h2 className="captionStyle">New Patches</h2></Link>
+      <Link width="88px" to="/new-patches"><h2 width="100%" className="captionStyle">New Patches</h2></Link>
       <Box
         id="tools"
         cursor="pointer"
+        width="100%"
         style={boxStyle}
         onMouseEnter={() => handleButtonMouseEvent('tools', 'in')}
         onMouseLeave={() => handleButtonMouseEvent('tools', 'out')}
@@ -217,34 +226,76 @@ export const Sidebar = () => {
         isChecked={!theme.isBright}
         onChange={() => theme.toggleTheme(!theme.isBright)}
       />
-      <Link to="/Logging">
-        <Button
-          width="64px"
-          marginTop='10px'
-          bgGradient="linear(to-r, teal.400, blue.500)"
-          color={theme.isBright ? 'white' : '#EEEEEE'}
-          _hover={{ bgGradient: 'linear(to-r, teal.500, blue.600)', boxShadow: 'xl' }}
-          onClick={() => log.setLogState({option: 'Log in'})}
-          borderRadius="full"
-        >
-          Log in
-        </Button>
-      </Link>
-      <Link to="/Logging">
-        <Button
-          width="64px"
-          className='SidebarButton'
-          margin='10px 0px 10px 0px'
-          bgGradient="linear(to-l, #AA8A63, #CA74AA)"
-          _hover={{ bgGradient: "linear(to-r, #9A7A53, #BA649A)", boxShadow: 'xl' }}
-          onClick={() => log.setLogState({option: 'Sign Up'})}
-          color={theme.isBright ? 'white' : '#EEEEEE'}
-          borderRadius='full'
-        >
-          Sign up
-        </Button>
-      </Link>
-      <FontAwesomeIcon icon={faCog} />
+      {log.logState.logInfo === "User found" ?
+      <button
+        style={{
+          width: "80px",
+          height: '40px',
+          margin: '10px 10px 10px 10px',
+          borderRadius: '99px',
+          color: theme.isBright ? 'white' : '#EEEEEE',
+          position: 'relative',
+          overflow: 'hidden',
+          zIndex: 1
+        }}
+        onMouseEnter={() => setTimeout(setLogOutHover(prevValue => prevValue + 1), 50)}
+        onMouseLeave={() => setLogOutHover(prevValue => prevValue + 1)}
+        onClick={() => {log.setDefault()}}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            zIndex: -1,
+            top: '-20px',
+            left: '-0px',
+            width: '80px',
+            height: '80px',
+            borderRadius: '99px',
+            backgroundImage: `linear-gradient(0deg, red, green, orange)`,
+            backgroundSize: '100% 100%',
+            backgroundRepeat: 'no-repeat',
+            transform: `rotate(${(logOutHover - 1)*30}deg)`,
+            transition: 'transform 1.5s ease-out',
+            ...((logOutHover%2 === 1) && {
+              transform: `rotate(${logOutHover*30}deg)`,
+            }),
+          }}
+        />
+        Log out
+      </button> :
+      <>
+        <Link to="/Logging">
+          <Button
+            width="80px"
+            marginTop='10px'
+            bgGradient="linear(to-r, teal.400, blue.500)"
+            color={theme.isBright ? 'white' : '#EEEEEE'}
+            _hover={{ bgGradient: 'linear(to-r, teal.500, blue.600)', boxShadow: 'xl' }}
+            onClick={() => log.setLogState({option: 'Log in'})}
+            borderRadius="full"
+          >
+            Log in
+          </Button>
+        </Link>
+        <Link to="/Logging">
+          <Button
+            width="80px"
+            className='SidebarButton'
+            margin='10px 0px 10px 0px'
+            bgGradient="linear(to-l, #AA8A63, #CA74AA)"
+            _hover={{ bgGradient: "linear(to-r, #9A7A53, #BA649A)", boxShadow: 'xl' }}
+            onClick={() => log.setLogState({option: 'Sign Up'})}
+            color={theme.isBright ? 'white' : '#EEEEEE'}
+            borderRadius='full'
+          >
+            Sign up
+          </Button>
+        </Link>
+      </>
+      }
+      <button>
+        <FontAwesomeIcon icon={faCog} />
+      </button> 
       {/* Settingi będą działać w taki sposób, że rozwijać się
       będą opcje podstawowe ale będzie też opcja more settings */}
     </Box>

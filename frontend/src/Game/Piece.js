@@ -36,7 +36,7 @@ const pieceTakingNotation = (pieceType, finalSquares, startXSquare) => {
 }
 
 const choosePiece = (props) => {
-  if( props.j === 0 ){
+  if( props.isUserWhite ? props.j === 0 : props.j === props.boardSize-1 ){
     if( props.i === 0 || props.i === props.boardSize-1 )
       return [blackRook, 'rook', false];
     else if( props.i === 1 || props.i === props.boardSize-2 )
@@ -47,9 +47,9 @@ const choosePiece = (props) => {
       return [blackQueen, 'queen', false];
     else if( props.i === 4 )
       return [blackKing, 'king', false];
-  } else if( props.j === 1 )
+  } else if( props.isUserWhite ? props.j === 1 : props.j === props.boardSize-2 )
     return [blackPawn, 'pawn', false];
-  else if( props.j === props.boardSize-1 ){ // white pieces or black, depending from the player.
+  else if( props.isUserWhite ? props.j === props.boardSize-1 : props.j === 0 ){ // white pieces or black, depending from the player.
     if( props.i === 0 || props.i === props.boardSize-1 )
       return [whiteRook, 'rook', true];
     else if( props.i === 1 || props.i === props.boardSize-2 )
@@ -60,7 +60,7 @@ const choosePiece = (props) => {
       return [whiteQueen, 'queen', true];
     else if( props.i === 4 )
       return [whiteKing, 'king', true];
-  } else if( props.j === props.boardSize-2)
+  } else if( props.isUserWhite ? props.j === props.boardSize-2 : props.j === 1)
     return [whitePawn, 'pawn', true];
   return [null, null, null];
 }
@@ -74,7 +74,7 @@ async function waitForCondition(condition, wait = 10) {
 const Piece = React.forwardRef((props, ref) => {
   let [pieceLook, typeTemp, isWhite] = choosePiece(props);
   const movesToPlay = usePossibleMovesContext();
-  
+
   const pieceType = React.useRef(typeTemp);
   const pieceImage = React.useRef(null);
   const thisNode = React.useRef(null);
@@ -100,7 +100,7 @@ const Piece = React.forwardRef((props, ref) => {
   // Casting to array then cutting numbers from keys and converting position in string into numbers
   const parsePieces = ( pieces, isPieceIDNeeded = false ) => Object.entries( pieces ).map(tuple => ({
     type: isPieceIDNeeded ? tuple[0] : tuple[0].replace(/\d+/g, ''), 
-    position: tuple[1].split('-').map(f => Number(f))
+    position: tuple[1].split('-').map(f => Number(f)),
   }));
 
   const updatePiecePositionsAndResult = (targetX, targetY) => {
@@ -131,6 +131,7 @@ const Piece = React.forwardRef((props, ref) => {
         props.blackPieces,
         props.moveNotation,
         props.result,
+        props.isUserWhite,
         true
       );
 
@@ -155,6 +156,7 @@ const Piece = React.forwardRef((props, ref) => {
           props.blackPieces,
           props.moveNotation,
           props.result,
+          props.isUserWhite,
           false
         )
       }))
@@ -175,6 +177,7 @@ const Piece = React.forwardRef((props, ref) => {
               {...props.blackPieces, [piece.id]: `${move[0]}-${move[1]}`},
               props.moveNotation,
               props.result,
+              props.isUserWhite,
               true
             );
             // if still check on the king is on keep checking other moves
@@ -190,7 +193,7 @@ const Piece = React.forwardRef((props, ref) => {
 
       props.result.current.checkmate = isWhite ? 'White' : 'Black'; // The end of the game if server answers
     } else {
-      enemyPieces = parsePieces( enemyPieces );      
+      enemyPieces = parsePieces( enemyPieces );
       props.result.current.stalemate = true;
 
       for(let piece of enemyPieces) { // checking if enemy can move
@@ -203,6 +206,7 @@ const Piece = React.forwardRef((props, ref) => {
           props.blackPieces,
           props.moveNotation,
           props.result,
+          props.isUserWhite,
           false // possible moves to make
         );
         if( possibleMoves.length !== 0 ) {
@@ -223,7 +227,7 @@ const Piece = React.forwardRef((props, ref) => {
 
     let destinationSquare = ref.current.querySelector(`#square-from-${targetX}-${targetY}`);
 
-    if (isPawnPromotion(targetY)) {
+    if (isPawnPromotion(targetY) && pieceType.current === 'pawn') {
       await handlePawnPromotion(targetX, targetY, destinationSquare);
     } else if (isCastlingMove()) {
       handleCastlingMove(targetX, targetY, destinationSquare);
@@ -237,7 +241,7 @@ const Piece = React.forwardRef((props, ref) => {
   };
 
   const isPawnPromotion = (targetY) => {
-    return isWhite ? targetY === 0 : targetY === props.boardSize - 1;
+    return (isWhite === props.isUserWhite) ? targetY === 0 : targetY === props.boardSize - 1;
   };
 
   const handlePawnPromotion = async (targetX, targetY, destinationSquare) => {
@@ -260,7 +264,7 @@ const Piece = React.forwardRef((props, ref) => {
   };
 
   const handleCastlingMove = (targetX, targetY, destinationSquare) => {
-    const edge = isWhite ? props.boardSize - 1 : 0;
+    const edge = (isWhite === props.isUserWhite) ? props.boardSize - 1 : 0;
     updatePiecePositionsAndResult(targetX, targetY);
     props.result.current.check ? playCheck() : playCastle();
 
@@ -284,7 +288,7 @@ const Piece = React.forwardRef((props, ref) => {
   };
 
   const handleRegularOrEnPassantMove = async (targetX, targetY) => {
-    const directionOfWander = isWhite ? 1 : -1;
+    const directionOfWander = (props.isUserWhite === isWhite) ? 1 : -1;
     const [epX, epY] = props.result.current?.enPassant ?? [-1, -1];
 
     props.moveNotation.current = [...props.moveNotation.current, toPieceNotation(pieceType.current, targetX, targetY)];
@@ -306,13 +310,13 @@ const Piece = React.forwardRef((props, ref) => {
 
     const pieceDown = ref.current.querySelector(`#square-from-${targetX}-${targetY + directionOfWander}`);
     pieceDown.replaceChildren();
-    filterOut((isWhite ? props.blackPieces : props.whitePieces), targetX, targetY + directionOfWander);
+    filterOut(((isWhite === props.isUserWhite) ? props.blackPieces : props.whitePieces), targetX, targetY + directionOfWander);
     playTaking();
   };
 
   const handlePieceTakingMove = async (targetX, targetY) => {
     props.moveNotation.current = [...props.moveNotation.current, pieceTakingNotation(pieceType.current, [targetX, targetY], startX)];
-    filterOut((isWhite ? props.blackPieces : props.whitePieces), targetX, targetY);
+    filterOut(((isWhite === props.isUserWhite) ? props.blackPieces : props.whitePieces), targetX, targetY);
     updatePiecePositionsAndResult(targetX, targetY);
     props.result.current.check ? playCheck() : playTaking();
   };
@@ -348,6 +352,7 @@ const Piece = React.forwardRef((props, ref) => {
     e.target.style.transform = "translate(0px, 0px)";
 
     if(
+      // (isWhite === logContext.logState.whitePieces) &&
       (startX !== targetX || startY !== targetY) && // check if piece was moved
       !checkIfThisColorMoves() && // check if good color is moved
       !checkIfIllegalMove( // check if move is legal
@@ -359,7 +364,8 @@ const Piece = React.forwardRef((props, ref) => {
         props.whitePieces,
         props.blackPieces,
         props.moveNotation,
-        props.result
+        props.result,
+        props.isUserWhite
       )
     )
       executeMove(targetX, targetY);
@@ -392,7 +398,7 @@ const Piece = React.forwardRef((props, ref) => {
         // here I should add something so that pointing will work as expected
       >
         { isUpgradeOngoing ?
-        <div style={{ display: 'flex', flexDirection: 'column'}}> 
+        <div style={{ display: 'flex', flexDirection: 'column', height: `calc(400% + 8px)`}}> 
           <PieceToChoose pieceChosen='bishop' newPieceGraphics={isWhite ? whiteBishop : blackBishop}/>
           <PieceToChoose pieceChosen='knight' newPieceGraphics={isWhite ? whiteKnight : blackKnight}/>
           <PieceToChoose pieceChosen='rook' newPieceGraphics={isWhite ? whiteRook : blackRook}/>
@@ -407,7 +413,8 @@ const Piece = React.forwardRef((props, ref) => {
             onClick={() => {
               props.clearMoveIndicators(movesToPlay.list);
 
-              if( !checkIfThisColorMoves() ){ // when it is the move of this color
+              if( !checkIfThisColorMoves() ){ 
+                // when it is the move of this color logContext to add
                 movesToPlay.setList( // setting all possible moves with this piece
                   getPossibleMoves(
                     pieceType.current,
@@ -418,6 +425,7 @@ const Piece = React.forwardRef((props, ref) => {
                     props.blackPieces,
                     props.moveNotation,
                     props.result,
+                    props.isUserWhite,
                     false // not checking if square is attacked
                   )
                 );

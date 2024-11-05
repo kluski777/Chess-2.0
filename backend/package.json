@@ -10,7 +10,8 @@
   "author": "Marcin Wójcik",
   "license": "ISC",
   "dependencies": {
-    "mongodb": "^6.9.0"
+    "mongodb": "^6.9.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"

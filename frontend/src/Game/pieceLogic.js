@@ -17,6 +17,7 @@ export const getPossibleMoves = (
   blackPieces,
   moveNotation,
   result,
+  isUserWhite,
   justChecking = false
 ) => {
   let toRet = [];
@@ -32,6 +33,7 @@ export const getPossibleMoves = (
       blackPieces,
       moveNotation,
       result,
+      isUserWhite,
       justChecking // true when checking if there is a check on the king
     );
   }
@@ -91,7 +93,7 @@ export const getPossibleMoves = (
 
   switch(pieceID){
     case 'pawn':
-      let direction = isWhite ? -1 : 1;
+      let direction = (isUserWhite ?? true) === isWhite ? -1 : 1;
 
       if(justChecking) {
         const left = [startPos[0] - 1, startPos[1] + direction];
@@ -187,6 +189,7 @@ export const checkIfIllegalMove = (
   blackPieces,
   moveNotation,
   result,
+  isUserWhite,
   justChecking = false
 ) => {
   if(finalPos[0] >= boardSize || finalPos[0] < 0 || finalPos[1] >= boardSize || finalPos[1] < 0)
@@ -237,7 +240,8 @@ export const checkIfIllegalMove = (
   }
 
   const pawn = (isWhite, move, finalSquares) => {
-    const directionOfWander = isWhite ? -1 : 1;
+    const directionOfWander = (isUserWhite ?? true) === isWhite ? -1 : 1;
+    // tu jest problem przez który pionki się nie ruszają
 
     const isOneSquareMoveLegit = (
         move[0] === 0 &&
@@ -257,7 +261,7 @@ export const checkIfIllegalMove = (
     const is2SquareMoveLegit =  (
         move[0] === 0 &&
         move[1] === directionOfWander*2 &&
-        finalSquares[1] - move[1] === (isWhite ? boardSize-2 : 1) &&
+        finalSquares[1] - move[1] === (isWhite === (isUserWhite ?? true) ? boardSize-2 : 1) &&
         !enemyPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`) &&
         !enemyPieces.includes(`${finalSquares[0]}-${finalSquares[1] - directionOfWander}`) &&
         !alliedPieces.includes(`${finalSquares[0]}-${finalSquares[1]}`) &&
@@ -352,7 +356,7 @@ export const checkIfIllegalMove = (
     else if( // castling
       Math.abs(move[0]) > 1 && 
       move[1] === 0 && 
-      !result.current.check && // tu coś się pierdzieli
+      !result.current.check &&
       moveNotation.current.filter( (_, index) => isWhite ? index%2 === 0 : index%2 !== 0 ).filter(val => val.startsWith("K") || val.startsWith("O")).length === 0
     ){
 

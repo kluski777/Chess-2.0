@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Table, Thead, Tr, Switch, FormLabel, Slider, 
   SliderTrack, SliderFilledTrack, SliderThumb, 
-  SliderMark, Select, Button
+  SliderMark, Button
 } from '@chakra-ui/react';
 import {Link} from 'react-router-dom';
 import {CenteredCell, CenteredLabel} from '../HandyComponents/HandyComponents'; 
@@ -33,12 +33,12 @@ export const CustomGame = ({variant, top, left, transform}) => {
 
   return (
     <Table
-      width='75%'
+      width='70%'
       position='relative'
       top={top === undefined ? '25px' : top}
       left={left === undefined ? '50%' : left}
       transform={transform === undefined ? 'translate(-50%) translateX(100px)' : transform}
-      background={theme.isBright ? 'linear-gradient(to right, rgb(250, 190, 170), rgb(220, 200, 170))' : 'linear-gradient(to right, rgb(45, 60, 30), rgb(60, 45, 30))'}
+      background={theme.isBright ? 'linear-gradient(to right, red, orange)' : 'linear-gradient(to right, rgb(45, 60, 30), rgb(60, 45, 30))'}
       borderRadius='10px'
     >
       <Thead>
@@ -119,22 +119,33 @@ export const CustomGame = ({variant, top, left, transform}) => {
           <CenteredCell padding='0px 3px 0px 3px' display='flex' justifyContent='center' alignItems='center' flexDirection='column'>
             <CenteredLabel
               {...tableFont}
-              fontSize='19px'
+              fontSize='24px'
               display='grid'
-              color={theme.isBright ? 'black' : 'white'}
+              color='#FFD700' // golden yellow
               textAlign='center'
-              margin='0px 0px 10px 0px'
+              margin='0px 0px 10px 10px'
+              textShadow='0px 0px 5px rgba(255, 215, 0, 0.5)' // retro arcade effect
+              fontWeight='bold'
+              letterSpacing='2px'
+              fontFamily='Pixel Arial'
             >
-              With whom to play?
+              Gaming buddy?
             </CenteredLabel>
-            <Select
-              defaultValue="stranger" 
-              style={tableFont}
-              onChange={(v) => setPlayWith(v)}
+            <select            
+              style={{
+                padding: "0px 20px 0px 20px",
+                width: "85%",
+                border: '1px solid white',
+                borderRadius: '5px',
+                backgroundColor: "none",
+                ...tableFont
+              }}
+              defaultValue="stranger"
+              onChange={(e) => setPlayWith(e.target.value)}
             >
               <option theme='stranger' >Stranger</option>
               <option theme='friend'>Friend</option>
-            </Select>
+            </select>
           </CenteredCell>
           <CenteredCell padding='0px' display='flex' justifyContent='center' alignItems='center' flexDirection='column'>
             <FormLabel

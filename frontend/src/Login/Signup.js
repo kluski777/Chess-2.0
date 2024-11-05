@@ -7,6 +7,7 @@ export const SignUp = ({theme, setLogState, setCreated, user, email, password, c
     const passValidation = () => Boolean(password.value)
     const confirmValidation = () => Boolean(confirmation.value) && confirmation.value === password.value
     
+    const [submitAnimate, setSubmitAnimate] = useState(0);
     const [userAnimation, setUserAnimation] = useState(true);
     const [emailAnimation, setEmailAnimation] = useState(true);
     const [passwordAnimation, setPasswordAnimation] = useState(true);
@@ -42,7 +43,7 @@ export const SignUp = ({theme, setLogState, setCreated, user, email, password, c
                 }
 
                 const data = await response.json();
-    
+
                 if(data?.message === 'User created successfully')
                     setCreated(true);
                 else
@@ -63,6 +64,7 @@ export const SignUp = ({theme, setLogState, setCreated, user, email, password, c
             className='form-class'
             onSubmit={(event) => submit(event)}
         >
+            <br/>
             <div className={`gradient ${!userAnimation ? 'gradient-animation-infinite' : 'gradient-animation-finite'}`}>
                 <input
                     type="text"
@@ -74,8 +76,9 @@ export const SignUp = ({theme, setLogState, setCreated, user, email, password, c
                     onClick={() => setUserAnimation(false)}
                     onBlur={() => setUserAnimation( userValidation() )}
                     onChange={(event) => user.set(event.target.value)}
-                /> <br/>
+                />
             </div>
+            <br/>
             <div className={`gradient ${!emailAnimation ? 'gradient-animation-infinite' : 'gradient-animation-finite'}`}>
                 <input
                     type="text"
@@ -87,8 +90,9 @@ export const SignUp = ({theme, setLogState, setCreated, user, email, password, c
                     onClick={() => setEmailAnimation(false)}
                     onBlur={() => setEmailAnimation( emailValidation() )}
                     onChange={(event) => email.set(event.target.value)}
-                /> <br/>
+                />
             </div>
+            <br/>
             <div className={`gradient ${!passwordAnimation ? 'gradient-animation-infinite' : 'gradient-animation-finite'}`}>
                 <input
                     type="password"
@@ -99,8 +103,9 @@ export const SignUp = ({theme, setLogState, setCreated, user, email, password, c
                     onClick={() => setPasswordAnimation(false)}
                     onBlur={() => setPasswordAnimation( passValidation() )}
                     onChange={(event) => password.set(event.target.value)}
-                /> <br/>
+                />
             </div>
+            <br/>
             <div className={`gradient ${!confirmationAnimation ? 'gradient-animation-infinite' : 'gradient-animation-finite'}`}>
                 <input
                     type="password"
@@ -111,9 +116,14 @@ export const SignUp = ({theme, setLogState, setCreated, user, email, password, c
                     onClick={() => setConfirmationAnimation(false)}
                     onBlur={() => setConfirmationAnimation( confirmValidation() )}
                     onChange={(event) => confirmation.set(event.target.value) }
-                /> <br/>
+                />
             </div>
-            <button> Submit </button> <br/>
+            <br/>
+            <button
+                onMouseEnter={() => setTimeout(setSubmitAnimate(prevValue => prevValue + 1), 200)}
+                onMouseLeave={() => setSubmitAnimate(prevValue => prevValue + 1)}
+                className={submitAnimate > 0 ? (submitAnimate%2 === 1 ? 'getBiggerAnimation' : 'getSmallerAnimation'): ''}
+            > Submit </button> <br/>
         </form>
     );
 }

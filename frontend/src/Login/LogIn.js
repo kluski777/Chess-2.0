@@ -6,6 +6,7 @@ export const Login = ({theme, setLogState, user, password}) => {
     const userValidation = () => Boolean(user.value)
     const passValidation = () => Boolean(password.value)
     
+    const [submitAnimate, setSubmitAnimate] = useState(0);
     const [userAnimation, setUserAnimation] = useState(true);
     const [passwordAnimation, setPasswordAnimation] = useState(true);
     const [wrongPass, setWrongPass] = useState(false);
@@ -44,7 +45,6 @@ export const Login = ({theme, setLogState, user, password}) => {
             setLogState({logInfo: 'Wrong password or username'})
             setWrongPass(true);
         }
-        // else if wrong query or smth
     }
     // if submit was successful then login context is changed and user goes to the 
     // landing site
@@ -75,8 +75,9 @@ export const Login = ({theme, setLogState, user, password}) => {
                     onBlur={() => setUserAnimation( userValidation() )}
                     value={user.value}
                     onChange={(event) => user.set(event.target.value)}
-                /> <br/>
+                />
             </div>
+            <br/>
             <div className={`gradient ${!passwordAnimation ? 'gradient-animation-infinite' : 'gradient-animation-finite'}`}>
                 <input 
                     type="password"
@@ -87,9 +88,14 @@ export const Login = ({theme, setLogState, user, password}) => {
                     onBlur={() => setPasswordAnimation( passValidation() )}
                     value={password.value}
                     onChange={(event) => password.set(event.target.value)}
-                /> <br/>
+                /> 
             </div>
-            <button> Submit </button> <br/>
+            <br/>
+            <button
+                onMouseEnter={() => setTimeout(setSubmitAnimate(prevValue => prevValue + 1), 200)}
+                onMouseLeave={() => setSubmitAnimate(prevValue => prevValue + 1)}
+                className={submitAnimate > 0 ? (submitAnimate%2 === 1 ? 'getBiggerAnimation' : 'getSmallerAnimation'): ''}
+            > Submit </button> <br/>
         </form>
     );
 }

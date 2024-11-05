@@ -2,8 +2,10 @@ import React, {useState, useEffect, useRef} from 'react';
 import './logForm.css';
 import {Login} from './LogIn.js';
 import {SignUp} from './Signup.js';
+import { useNavigate } from 'react-router-dom';
 import {useThemeContext} from '../HandyComponents/themeContext.js';
 import { useLogContext } from '../HandyComponents/LogContext.js'
+import {HomePage} from '../Home-page/HomePage.js'
 
 const notFoundUserPrefix  = 'What'
 const notFoundEmailPrefix = 'Your'
@@ -21,11 +23,12 @@ export const LoggingContainer = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [created, setCreated] = useState(false);
 
+    const navigate = useNavigate();
+
     const logHeight = useRef(0);
     const formRef = useRef(null);
     const signUpRef = useRef(null);
 
-    // change of the LogConext causes rerender but why?
     const LogContext = useLogContext();
     const theme = useThemeContext();
 
@@ -44,65 +47,69 @@ export const LoggingContainer = () => {
                 LogContext.setLogState({logInfo: ''})
             }, 2000)
         } else if(LogContext.logState.logInfo === 'User found') {
-            // animacja, logowania byłaby w pytke
             setTimeout(() => {
-                window.location.href = '/'; // userInfo user goes on the wall, can play games
-            }, 500);
+                navigate('/') // animacja logowania bylaby chyba git, ale tym to sie fe rajaja
+            }, 1000);
         }
     }, [LogContext.logState.logInfo, created]);
 
     return (
-        <div className="login-container" style={{height: window.innerHeight, backgroundColor: theme.isBright ? 'rgb(160, 170, 160)' : '#0a0e27'}}>
-            {LogContext.logState.logInfo?.startsWith(notFoundUserPrefix) || LogContext.logState.logInfo?.startsWith(notFoundEmailPrefix) && 
-                <div
-                    className="existing-user-info"
-                    style={{height: `${signUpRef.current?.clientHeight}px`, top: `${signUpRef.current?.getClientRects()[0].top}px`}}
-                >
-                    <h3> {LogContext.logState.logInfo} </h3>
-                </div>
-            }
-            <div className="response-box">
-                <button
-                    style={{backgroundColor: theme.isBright ? 'rgb(0, 115, 175)' : 'rgb(0, 55, 115)', color: theme.isBright ? 'black' : 'wheat', opacity: LogContext.logState.option === 'Log In' ? '1' : '0.5'}}
-                    onClick={() => LogContext.setLogState({option: 'Log In'})}
-                >
-                    Log in
-                </button>
-                <button
-                    ref={signUpRef}
-                    style={{backgroundColor: theme.isBright ? 'rgb(209, 165, 10)' : 'rgb(150, 110, 0)', color: 'black', opacity: LogContext.logState.option === 'Sign Up' ? '1' : '0.5'}}
-                    onClick={() => LogContext.setLogState({option: 'Sign Up'})}
-                >
-                    Sign up
-                </button>
+        <>
+            <div className={LogContext.logState.logInfo === 'User found' ? "home-container" : "Die-trash"}>
+                <HomePage/>
             </div>
-            { created === true ?
-                <div
-                    style={{height: `${logHeight.current}px`}}
-                    className="form-class sign-up-success animate-class"
-                > User created successfully </div>
-                :
-                <div style={formStyle} ref={formRef}>
-                    {LogContext.logState.option === 'Sign Up' ?
-                        <SignUp
-                            theme={theme}
-                            setLogState={LogContext.setLogState}
-                            setCreated={setCreated}
-                            user={{value: user, set: setUser}}
-                            email={{value: email, set: setEmail}}
-                            password={{value: password, set: setPassword}}
-                            confirmation={{value: confirmPassword, set: setConfirmPassword}}
-                        />
-                        :
-                        <Login
-                            theme={theme}
-                            setLogState={LogContext.setLogState}
-                            user={{value: user, set: setUser}}
-                            password={{value: password, set: setPassword}}
-                        />
-                    }
+            <div className="login-container" style={{height: window.innerHeight, backgroundColor: theme.isBright ? 'rgb(160, 170, 160)' : '#0a0e27'}}>
+                {(LogContext.logState.logInfo?.startsWith(notFoundUserPrefix) || LogContext.logState.logInfo?.startsWith(notFoundEmailPrefix)) && 
+                    <div
+                        className="existing-user-info"
+                        style={{height: `${signUpRef.current?.clientHeight}px`, top: `${signUpRef.current?.getClientRects()[0].top}px`}}
+                    >
+                        <h3> {LogContext.logState.logInfo} </h3>
+                    </div>
+                }
+                <div className="response-box">
+                    <button
+                        style={{backgroundColor: theme.isBright ? 'rgb(0, 115, 175)' : 'rgb(0, 55, 115)', color: theme.isBright ? 'black' : 'wheat', opacity: LogContext.logState.option === 'Log In' ? '1' : '0.5'}}
+                        onClick={() => LogContext.setLogState({option: 'Log In'})}
+                    >
+                        Log in
+                    </button>
+                    <button
+                        ref={signUpRef}
+                        style={{backgroundColor: theme.isBright ? 'rgb(209, 165, 10)' : 'rgb(150, 110, 0)', color: 'black', opacity: LogContext.logState.option === 'Sign Up' ? '1' : '0.5'}}
+                        onClick={() => LogContext.setLogState({option: 'Sign Up'})}
+                    >
+                        Sign up
+                    </button>
                 </div>
-            }
-        </div>
+                { created === true ?
+                    <div
+                        style={{height: `${logHeight.current}px`}}
+                        className="form-class sign-up-success animate-class"
+                    > User created successfully </div>
+                    :
+                    <div style={formStyle} ref={formRef}>
+                        {LogContext.logState.option === 'Sign Up' ?
+                            <SignUp
+                                theme={theme}
+                                setLogState={LogContext.setLogState}
+                                setCreated={setCreated}
+                                user={{value: user, set: setUser}}
+                                email={{value: email, set: setEmail}}
+                                password={{value: password, set: setPassword}}
+                                confirmation={{value: confirmPassword, set: setConfirmPassword}}
+                            />
+                            :
+                            <Login
+                                theme={theme}
+                                setLogState={LogContext.setLogState}
+                                user={{value: user, set: setUser}}
+                                password={{value: password, set: setPassword}}
+                            />
+                        }
+                    </div>
+                }
+            </div>
+        </>
     );
 }

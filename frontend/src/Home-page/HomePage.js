@@ -1,88 +1,194 @@
 import {Button, Box, Table, Tbody, Tr, Td} from '@chakra-ui/react'
 import {useThemeContext} from '../HandyComponents/themeContext'
 import React from 'react'
-import {Link} from 'react-router-dom'
 import {CenteredCell} from './../HandyComponents/HandyComponents'
 import {CustomGame} from './../Room/CustomGame'
+import {useLogContext} from '../HandyComponents/LogContext'
+import { useNavigate } from 'react-router-dom';
+import './HomePage.css'
 
 import darkBackground from './../Assets/mainPage/darkBackground.jpg'
 import brightBackground from './../Assets/mainPage/brightMode.jpg'
 
 // WIEDZIEĆ KIEDY SIDEBAR JEST A KIEDY NIE JEST ROZWINIETY 
 // Rerender taki jak trzeba po zmianie theme'u 
-// w tle będzie szła szachownica nieskończona
 
-const toggleVariant = ['A', 'B', 'C'] // tu powinny być nazwy wariantów.
+const toggleVariant = ['A', 'B', 'C']; // tu powinny być nazwy wariantów.
 
 export const HomePage = () => {
-  // user is choosing which option to set, so that he'll be able to play
-  
   const [firstButtonOption, setFirstButtonOption] = React.useState('A')
   const [custom, setCustom] = React.useState(false);
+  const logState = useLogContext();
   const theme = useThemeContext();
+  const navigate = useNavigate();
+  
+  const ButtonWrapper = ({ children, id, color, timeFormat, hoverColor}) => {
+    const [isLoading, setIsLoading] = React.useState(true);
+    const loadingRef = React.useRef(true);
+    const intervalID = React.useRef(null);
+    
+    const clearCurrentInterval = () => {
+        if (intervalID.current) {
+            clearInterval(intervalID.current);
+            intervalID.current = null;
+        }
+    };
 
-  const ButtonWrapper = ({children, color, timeFormat, hoverColor}) => {
-    return ( 
-      <Button 
-        color={color}
-        _hover={{bg: hoverColor}}
-        variant='outline'
-        fontSize='26px'
-        width='100%'
-        px='10'
-        py='20'
-        borderColor="teal.200"
-        onClick={(e) => {
-          if(custom)
+    // Clear interval on unmount
+    React.useEffect(() => {
+        return () => {
+            if (intervalID.current) {
+                clearInterval(intervalID.current);
+                intervalID.current = null;
+            }
+        };
+    }, []);
+
+    React.useEffect(() => {
+      if( intervalID.current ) {
+        clearCurrentInterval();
+      }
+    }, [logState.logState.userInfo]);
+
+    const opponentFound = () => {
+      clearCurrentInterval();
+      setIsLoading(true);
+      navigate('/Game');
+    }
+
+    const handleButtonClick = async (e) => {
+        // Clear any existing interval first
+        clearCurrentInterval();
+        setIsLoading(prev => !prev);
+        loadingRef.current = !loadingRef.current;
+
+        if(!loadingRef.current) {
+            const dataFrom = await fetch(`http://localhost:5500/pairing?format=${id}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    user: logState.logState.userInfo.user,
+                    rating: logState.logState.userInfo.rating.toString(),
+                })
+            })
+            .then(response => response.json())
+            .catch(error => console.log(`Following error while POSTING pairing ${error}`));
+
+            if(!dataFrom?.opponent && !intervalID.current) {  // Check if interval doesn't exist
+                intervalID.current = setInterval(async () => {
+                    // Only proceed if we're still loading and interval hasn't been cleared
+                    try {
+                        const opponentInfo = await fetch(
+                            `http://localhost:5500/pairing?format=${id}&user=${logState.logState.userInfo.user}`,
+                            {
+                                method: 'GET',
+                                headers: { 'Content-Type': 'application/json' },
+                            }
+                        ).then(response => response.json());
+
+                        if (opponentInfo?.opponent?.user?.length > 0) {
+                          logState.setLogState({opponent: opponentInfo.opponent.user, isUserWhite: true});
+                          opponentFound();
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        clearCurrentInterval();
+                    }
+                }, 1000);
+            } else if(dataFrom?.opponent) {
+              logState.setLogState({opponent: dataFrom.opponent, isUserWhite: false});
+              opponentFound();
+            } else {
+              clearCurrentInterval();
+            }
+        } else {
+            try {
+                fetch(`http://localhost:5500/pairing?format=${id}`, {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user: logState.logState.userInfo.user,
+                        rating: logState.logState.userInfo.rating.toString(),
+                    })
+                });
+            } catch (error) {
+                console.log("Error deleting stuff from the server");
+                console.log(error);
+            }
+        }
+
+        if (custom) {
             e.preventDefault();
-        }}
+        }
+    };
+
+    return <Button
+        color={color}
+        _hover={{ bg: hoverColor }}
+        id={id}
+        variant="outline"
+        fontSize="26px"
+        width="100%"
+        px="10"
+        py="20"
+        borderColor="teal.200"
+        onClick={handleButtonClick}
       >
-        {children} <br/>
-        {timeFormat+''}
-      </Button>
-    )
-  }
+        {isLoading ?
+          <>
+            {children}
+            <br/>
+            {timeFormat}
+          </> : 
+          <div className="loader"/>
+        }
+      </Button>;
+  };
 
 
 
-  const BulletGameButton = ({children}) => {
-    return <ButtonWrapper timeFormat='Bullet' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#DF0000' : '#8A0000'}>{children}</ButtonWrapper>
+  const BulletGameButton = ({children, id}) => {
+    return <ButtonWrapper id={id} timeFormat='Bullet' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#DF0000' : '#8A0000'}>{children}</ButtonWrapper>
   }
   
-  const BlitzGameButton = ({children}) => {
-    return <ButtonWrapper timeFormat='Blitz' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#FFAA00' : '#AA6600'}>{children}</ButtonWrapper>
+  const BlitzGameButton = ({children, id}) => {
+    return <ButtonWrapper id={id} timeFormat='Blitz' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#FFAA00' : '#AA6600'}>{children}</ButtonWrapper>
   }
   
-  const RapidGameButton = ({children}) => {
-    return <ButtonWrapper timeFormat='Rapid' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#AAAAAA' : '#555555'}>{children}</ButtonWrapper>
+  const RapidGameButton = ({children, id}) => {
+    return <ButtonWrapper id={id} timeFormat='Rapid' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#AAAAAA' : '#555555'}>{children}</ButtonWrapper>
   }
 
   // do TbodyContent dorzucić custom i drugą tabelę.
   const TbodyContent = () => {
     return <Tbody>
       <Tr id='bullet games' display='grid' gridTemplateColumns='1fr 1fr 1fr'>
-        <CenteredCell><BulletGameButton>2+0</BulletGameButton></CenteredCell>
-        <CenteredCell><BulletGameButton>3+0</BulletGameButton></CenteredCell>
-        <CenteredCell><BulletGameButton>3+1</BulletGameButton></CenteredCell>
+        <CenteredCell><BulletGameButton id="2+0">2+0</BulletGameButton></CenteredCell>
+        <CenteredCell><BulletGameButton id="3+0">3+0</BulletGameButton></CenteredCell>
+        <CenteredCell><BulletGameButton id="3+1">3+1</BulletGameButton></CenteredCell>
       </Tr>
       <Tr id='blitz games' display='grid' gridTemplateColumns='1fr 1fr 1fr'>
-        <CenteredCell><BlitzGameButton>5+0</BlitzGameButton></CenteredCell>
-        <CenteredCell><BlitzGameButton>5+3</BlitzGameButton></CenteredCell>
-        <CenteredCell><BlitzGameButton>10+0</BlitzGameButton></CenteredCell>
+        <CenteredCell><BlitzGameButton id="5+0">5+0</BlitzGameButton></CenteredCell>
+        <CenteredCell><BlitzGameButton id="5+3">5+3</BlitzGameButton></CenteredCell>
+        <CenteredCell><BlitzGameButton id="10+0">10+0</BlitzGameButton></CenteredCell>
       </Tr>
       <Tr id='rapid games' display='grid' gridTemplateColumns='1fr 1fr 1fr'>
-        <CenteredCell><RapidGameButton>15+0</RapidGameButton></CenteredCell>
-        <CenteredCell><RapidGameButton>15+5</RapidGameButton></CenteredCell>
-        <CenteredCell><RapidGameButton>30+15</RapidGameButton></CenteredCell>
+        <CenteredCell><RapidGameButton id="15+0">15+0</RapidGameButton></CenteredCell>
+        <CenteredCell><RapidGameButton id="15+5">15+5</RapidGameButton></CenteredCell>
+        <CenteredCell><RapidGameButton id="30+15">30+15</RapidGameButton></CenteredCell>
       </Tr>
     </Tbody>
   }
 
   return (
     <Box
+      display="flex"
+      flexDirection="row"
+      alignItems="center"
       backgroundImage={theme.isBright ? brightBackground : darkBackground}
       backgroundRepeat="Repeat"
       backgroundSize="100px"
+      height="100%"
     >
       <Table
         opacity={0.9}
@@ -91,7 +197,6 @@ export const HomePage = () => {
         left='calc((100% + 200px)/2)'
         transform='translateX(-50%)'
         border='5px solid gray.800'
-        top='10px'
         marginBottom='25px'
         backgroundColor={theme.isBright ? 'gray.300' : 'gray.600'}
       >
@@ -174,7 +279,7 @@ export const HomePage = () => {
           alignItems='center'
           justifyContent='center'
           position="absolute"
-          background='rgba(0, 0, 0, 0.25)'
+          background='rgba(0, 0, 0, 0.5)'
           onClick={() => {setCustom(false)}}
         >
           <Box
@@ -184,9 +289,9 @@ export const HomePage = () => {
             textAlign='center'
             top='20%'
             borderRadius='35px'
-            backgroundColor='rgb(170, 200, 140)'
+            backgroundColor='transparent'
             zIndex='1'
-            width='60%'
+            width='80%'
             onClick={(event) => {event.stopPropagation();}}
           >
             <CustomGame top='0px' left='50%' transform='translateX(-50%)'/>
