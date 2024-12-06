@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {Box} from '@chakra-ui/react';
 import {useThemeContext} from './../HandyComponents/themeContext';
-import {usePossibleMovesContext} from './../HandyComponents/PossibleSquares'
 
 const blackBrightColor = 'rgb(60, 60, 120)';
 const blackDarkColor = 'rgb(40, 40, 90)'
@@ -14,8 +13,7 @@ const whiteDarkColor = 'gray';
 const whiteRightClickedColor = 'red';
 
 
-export const Tile = ({i, j, children, whitePieces, blackPieces, ...props}) => {
-  const moveList = usePossibleMovesContext();
+export const Tile = ({i, j, children, ...props}) => {
   const thisElementRef = useRef(null);
   const theme = useThemeContext();
   const [tileColor, setTileColor] = useState((i%2 === 0 && j%2 === 0) || (i%2 === 1 && j%2 === 1) ? blackBrightColor : whiteBrightColor);
@@ -51,11 +49,7 @@ export const Tile = ({i, j, children, whitePieces, blackPieces, ...props}) => {
         }}
         onClick={ event => {
           event.preventDefault();
-          const childList = Array.from( thisElementRef.current.children ).filter(element => element.id.startsWith( 'dot' ));
-
-          if(childList.length > 0 && moveList.list.some(f => f[0] === i && f[1] === j)) {
-            moveList.executeMoveFunction(i, j, moveList.list); // without moveList.list executeMove would have obsolete value
-          }
+          event.stopPropagation();
         }}
         height='100%'
         width='100%'

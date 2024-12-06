@@ -1,17 +1,18 @@
-:root {
-  --logo-color: rgb(142, 180, 225);
-}
-
 .subCaptionStyle, .captionStyle {
-  font-family: Aclonica;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-weight: 900;
-  font-size: 25px;
-  color: var(--logo-color);
+  font-size: 28px;
+  width: 100%;
+  padding: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #FFA500;
 }
 
 .subCaptionStyle {
-  font-size: 21px;
-  color: rgb(240, 240, 240);
+  font-size: 19px;
+  color: white;
   font-weight: 100;
 }
 

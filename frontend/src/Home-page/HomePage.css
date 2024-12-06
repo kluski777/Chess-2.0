@@ -13,5 +13,5 @@
     -webkit-mask-composite: source-out;
             mask-composite: subtract;
     animation: turn 1s infinite linear;
-}
+}                                                                                                                                       
 @keyframes turn {to{transform: rotate(1turn)}}

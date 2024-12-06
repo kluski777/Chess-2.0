@@ -106,7 +106,6 @@ export const Sidebar = () => {
     <img src={logoWithCaption} style={logoStyle} alt="logo"/> : 
     <img src={logo} style={logoStyle} alt="logo with caption"/>
 
-
   const handleSidebarMouseEnter = () => {
     clearTimeout(timer.current)
     timer.current = setTimeout(() => {
@@ -136,13 +135,12 @@ export const Sidebar = () => {
 
   return (
     <Box
-      bg="black"
+      bg={`linear-gradient(-160deg, black, ${theme.isBright ? 'rgb(0, 120, 10)' : 'rgb(0, 60, 30)'})`}
       width={isHovered ? "200px" : "100px"}
       height="100%"
       display="flex"
       flexDirection="column"
       position="fixed"
-      justifyContent="spaceBetween"
       alignItems="center"
       zIndex={10}
       transition="width 0.35s"
@@ -158,7 +156,7 @@ export const Sidebar = () => {
         onMouseEnter={() => handleButtonMouseEvent('play', 'in')}
         onMouseLeave={() => handleButtonMouseEvent('play', 'out')}
       >
-        <h2 className="captionStyle">Play</h2>
+        <h2 className="captionStyle"><em>Play</em></h2>
         <MovingComponent timesHovered={playHover}>
           <Link to="/Play-A"><SubCaption>Wariant A</SubCaption></Link>
           <Link to="/Play-B"><SubCaption>Wariant B</SubCaption></Link>
@@ -172,7 +170,7 @@ export const Sidebar = () => {
         onMouseEnter={() => handleButtonMouseEvent('rules', 'in')}
         onMouseLeave={() => handleButtonMouseEvent('rules', 'out')}
       >
-        <h2 className="captionStyle">New rules</h2>
+        <h2 className="captionStyle"><em>New rules</em></h2>
         <MovingComponent timesHovered={rulesHover}>
           <Link to="/technology-tree"><SubCaption>Technology tree</SubCaption></Link>
           <Link to="/special-tiles"><SubCaption>Special tiles</SubCaption></Link>
@@ -187,14 +185,14 @@ export const Sidebar = () => {
         onMouseEnter={() => handleButtonMouseEvent('tactics', 'in')}
         onMouseLeave={() => handleButtonMouseEvent('tactics', 'out')}
       >
-        <h2 className="captionStyle">Tactics</h2>
+        <h2 className="captionStyle"><em>Tactics</em></h2>
         <MovingComponent timesHovered={tacticsHover}>
           <Link to="/puzzles"><SubCaption>Puzzles</SubCaption></Link>
           <Link to="/puzzle-storm"><SubCaption>Puzzle storm</SubCaption></Link>
           <Link to="/puzzle-dashboard"><SubCaption>Puzzle dashboard</SubCaption></Link>
         </MovingComponent>
       </Box>
-      <Link width="88px" to="/new-patches"><h2 width="100%" className="captionStyle">New Patches</h2></Link>
+      <Link style={{width: '100%'}} to="/new-patches"><h2 width="100%" className="captionStyle"><em>New Patches</em></h2></Link>
       <Box
         id="tools"
         cursor="pointer"
@@ -203,7 +201,7 @@ export const Sidebar = () => {
         onMouseEnter={() => handleButtonMouseEvent('tools', 'in')}
         onMouseLeave={() => handleButtonMouseEvent('tools', 'out')}
       >
-        <h2 className="captionStyle">Tools</h2>
+        <h2 className="captionStyle"><em>Tools</em></h2>
         <MovingComponent timesHovered={toolsHover}>
           <Link to="/computer-analysis"><SubCaption>Computer analysis</SubCaption></Link>
           <Link to="/board-editor"><SubCaption>Board editor</SubCaption></Link>
@@ -271,7 +269,7 @@ export const Sidebar = () => {
             bgGradient="linear(to-r, teal.400, blue.500)"
             color={theme.isBright ? 'white' : '#EEEEEE'}
             _hover={{ bgGradient: 'linear(to-r, teal.500, blue.600)', boxShadow: 'xl' }}
-            onClick={() => log.setLogState({option: 'Log in'})}
+            onClick={() => log.setLogState({option: 'Log In'})}
             borderRadius="full"
           >
             Log in

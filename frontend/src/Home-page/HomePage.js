@@ -37,10 +37,10 @@ export const HomePage = () => {
     // Clear interval on unmount
     React.useEffect(() => {
         return () => {
-            if (intervalID.current) {
-                clearInterval(intervalID.current);
-                intervalID.current = null;
-            }
+          if (intervalID.current) {
+              clearInterval(intervalID.current);
+              intervalID.current = null;
+          }
         };
     }, []);
 
@@ -87,7 +87,7 @@ export const HomePage = () => {
                         ).then(response => response.json());
 
                         if (opponentInfo?.opponent?.user?.length > 0) {
-                          logState.setLogState({opponent: opponentInfo.opponent.user, isUserWhite: true});
+                          logState.setLogState({opponent: opponentInfo.opponent, isUserWhite: true, boardSize: 8}); // to sie zmieni
                           opponentFound();
                         }
                     } catch (error) {
@@ -96,7 +96,7 @@ export const HomePage = () => {
                     }
                 }, 1000);
             } else if(dataFrom?.opponent) {
-              logState.setLogState({opponent: dataFrom.opponent, isUserWhite: false});
+              logState.setLogState({opponent: dataFrom.opponent, isUserWhite: false, boardSize: 8}); // boardSize sie zmeini
               opponentFound();
             } else {
               clearCurrentInterval();
@@ -211,6 +211,8 @@ export const HomePage = () => {
                         variant={ !custom ? 'solid' : 'ghost' }
                         colorScheme={firstButtonOption === 'A' ? 'teal' : firstButtonOption === 'B' ? 'green' : 'red'}
                         color={ !custom || theme.isBright ? 'black' : 'white' }
+                        fontSize={'xl'}
+                        width='100%'
                         onClick={() => {
                           if(!custom)
                             setFirstButtonOption(toggleVariant[(toggleVariant.indexOf(firstButtonOption)+1)%toggleVariant.length])
@@ -218,18 +220,19 @@ export const HomePage = () => {
                         }}
                         size='lg'
                         px='35%'
-                        py='10%'
+                        py='10%'                        
                       >
-                        Quick {firstButtonOption} variant
+                        {firstButtonOption} variant
                       </Button>
                     </CenteredCell>
                     <CenteredCell width='50%'>
                       <Button
                         variant={ custom ? 'solid' : 'ghost' }
+                        width='100%'
                         colorScheme='blue'
+                        fontSize={'xl'}
                         color={ custom || theme.isBright ? 'black' : 'white' }
                         onClick={() => setCustom(true)}
-                        size='lg'
                         px='35%'
                         py='10%'
                       >

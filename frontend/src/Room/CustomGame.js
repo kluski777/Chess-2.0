@@ -8,9 +8,10 @@ import {Link} from 'react-router-dom';
 import {CenteredCell, CenteredLabel} from '../HandyComponents/HandyComponents'; 
 import {useThemeContext} from '../HandyComponents/themeContext';
 
-// daj tło w małe szachownice
-
 export const CustomGame = ({variant, top, left, transform}) => {
+  const timeSliderRef = React.useRef(null);
+  const incrementSliderRef = React.useRef(null);
+
   const [isRated, setIsRated] = React.useState(true);
   const theme = useThemeContext();
   const [sliderValues, setSliderValues] = React.useState({
@@ -58,6 +59,7 @@ export const CustomGame = ({variant, top, left, transform}) => {
             <Slider 
               defaultValue={3} 
               colorScheme="blue"
+              ref={timeSliderRef}
               min={1}
               max={60}
               step={1}
@@ -70,7 +72,7 @@ export const CustomGame = ({variant, top, left, transform}) => {
                 textAlign='center'
                 bg='transparent'
                 color={theme.isBright ? 'white' : 'gray'}
-                transform={'translateX(calc(-50% + 25px))'}
+                transform={`translateX(calc(${(sliderValues.time / 60 * timeSliderRef?.current?.parentElement?.clientWidth) ?? 0}px - 40%))`}
                 mt='-15%'
               >
                 {showMark.time && sliderValues.time + ' min'}
@@ -88,6 +90,7 @@ export const CustomGame = ({variant, top, left, transform}) => {
           <Slider 
               defaultValue={0} 
               colorScheme="yellow"
+              ref={incrementSliderRef}
               min={0}
               max={30}
               step={1}
@@ -100,7 +103,7 @@ export const CustomGame = ({variant, top, left, transform}) => {
                 textAlign='center'
                 bg='transparent'
                 color={theme.isBright ? 'white' : 'gray'}
-                transform={'translateX(-50%)'}
+                transform={`translateX(calc(${Math.floor(sliderValues.increment / 30 * incrementSliderRef?.current?.parentElement?.clientWidth) ?? 0}px - 40%))`}
                 mt='-15%'
               >
                 {showMark.increment && sliderValues.increment + ' s'}

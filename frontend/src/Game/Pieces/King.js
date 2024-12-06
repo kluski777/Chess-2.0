@@ -1,0 +1,90 @@
+import React from 'react';
+import { Piece } from './Piece';
+import { boardSize } from '../../HandyComponents/LogContext';
+import "../piece.css"
+
+import blackKing from '../../Assets/blackPieces/king.png';
+import whiteKing from '../../Assets/whitePieces/king.png'
+
+export class King extends Piece {
+    type = 'King';
+
+    constructor({isWhite, i, j, isPlayer}){
+        super({i, j, isPlayer});
+        this.graphic = isWhite ? whiteKing : blackKing;
+        this.possibleMoves = () => this.attack(true);
+    }
+
+    updateCheck(checkValue) { // AI to zrobiło idk jak to działa
+        if(checkValue) {
+            this.props.pointer.current.classList.remove('check-style');
+            // Force a reflow
+            void this.props.pointer.current.offsetWidth;
+            this.props.pointer.current.classList.add('check-style');
+        } else {
+            this.props.pointer.current.classList.remove('check-style');
+        }
+    }
+
+    attack(checkCheck = false) {
+        return [-1, 0, 1].flatMap(i => [-1, 0, 1].filter(j => (i !== 0 || j !== 0) && (!checkCheck || this.validateMove(i, j)) ).map(j => [i, j]));
+    }
+
+    canMove(moveX, moveY) {
+        const {playerPieces, gameEvents: {check}, moveHistory} = this.context;
+        const enemyPieces = playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces'];
+
+        if( // można to zrobić w jednym ifie.
+            moveX === -2 &&
+            !moveHistory.current.some(p => (p.King ?? false) && (this.isPlayer ? p.King?.finalSquares?.y - p.King?.move?.y === boardSize - 1 : p.King?.finalSquares?.y === p.King?.move?.y) ) &&
+            !moveHistory.current.filter(p => p.Rook).some(piece => (this.isPlayer ? (piece.Rook?.finalSquares?.y - piece.Rook?.move?.y  === boardSize - 1) : (piece.Rook?.finalSquares?.y === piece.Rook?.move?.y)) && piece.Rook?.finalSquares?.x === piece.Rook?.move?.x) &&
+            !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x - 1 && y === this.y) ) && 
+            !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x - 2 && y === this.y) ) &&
+            this.validateMove(moveX, moveY) &&
+            !check
+        ) {
+            
+            playerPieces.current[this.isPlayer ? 'allyPieces' : 'enemyPieces']
+                .find(p => p.current.x === 0 && (this.isPlayer ? p.current.y === boardSize - 1 : p.current.y === 0))
+                .current.x += 3;
+
+            const rookContainer = document.querySelector(`#piece-${0}-${this.isPlayer ? boardSize - 1 : 0}`);
+            document.querySelector(`#square-${3}-${this.isPlayer ? boardSize - 1 : 0}`).replaceChildren(rookContainer);
+            document.querySelector(`#square-${0}-${this.isPlayer ? boardSize - 1 : 0}`).replaceChildren();
+            return true;
+        } else if(
+            moveX === 2 && // to do ogólnienia w chess960 nie zadziała
+            !moveHistory.current.some(p => (p.King ?? false) && (this.isPlayer ? p.King?.finalSquares?.y - p.King?.move?.y === boardSize - 1 : p.King?.finalSquares?.y === p.King?.move?.y) ) &&
+            !moveHistory.current.filter(p => p.Rook).some(piece => this.isPlayer ? (piece.Rook?.finalSquares?.y - piece.Rook?.move?.y  === boardSize - 1) : (piece.Rook?.finalSquares?.y === piece.Rook?.move?.y) && piece.Rook?.finalSquares?.x === piece.Rook?.move?.x) &&
+            !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x + 1 && y === this.y) ) && 
+            !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x + 2 && y === this.y) ) &&
+            this.validateMove(moveX, moveY) &&
+            !check
+        ) {
+            playerPieces.current[this.isPlayer ? 'allyPieces' : 'enemyPieces']
+                .find(p => p.current.x === boardSize - 1 && (this.isPlayer ? p.current.y === boardSize - 1 : p.current.y === 0))
+                .current.x -= 2;
+
+            const rookContainer = document.querySelector(`#piece-${boardSize - 1}-${this.isPlayer ? boardSize - 1 : 0}`);
+            document.querySelector(`#square-${boardSize - 3}-${this.isPlayer ? boardSize - 1 : 0}`).replaceChildren(rookContainer);
+            document.querySelector(`#square-${boardSize - 1}-${this.isPlayer ? boardSize - 1 : 0}`).replaceChildren();
+            return true;
+        }
+        return (Math.abs(moveX) < 2 && Math.abs(moveY) < 2) && this.validateMove(moveX, moveY);
+    }
+
+    getPosition(){
+        return `King-${this.x}-${this.y}`;
+    }
+
+    render(){
+        return (
+            <img 
+                className={`piece ${this.state.backgroundStyle}`}
+                ref={this.props.pointer}
+                src={this.graphic}
+                alt={`${this.props.isWhite ? 'white' : 'black'} king`}
+            />
+        );
+    }
+}

@@ -4,7 +4,6 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import {ThemeContextProvider} from './HandyComponents/themeContext';
-import {PossibleMovesProvider} from './HandyComponents/PossibleSquares';
 import {LogContextProvider} from './HandyComponents/LogContext'
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
@@ -41,9 +40,7 @@ root.render(
     <ChakraProvider theme={myChakraTheme}>
       <ThemeContextProvider>
         <LogContextProvider>
-          <PossibleMovesProvider>
-            <App/>
-          </PossibleMovesProvider>
+          <App/>
         </LogContextProvider>
       </ThemeContextProvider>
     </ChakraProvider>

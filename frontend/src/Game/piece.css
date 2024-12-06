@@ -1,32 +1,77 @@
-.pieceStyling {
-  position: relative;
+.moveable-container {
   display: flex;
+  justify-content: center;
+  align-items: center;
   height: 100%;
   width: 100%;
-  border: none !important;
-  outline: none !important;
+}
+
+.piece-to-choose, .piece {
+  z-index: 2;
+  padding: 2.5%;
+  width: 100%;
+  height: 100%;
   cursor: pointer;
-  z-index: 1;
 }
 
-.figureToPromoteStyle {
-  z-index: 1;
-  border: darkslategray solid 4px;
+.piece-to-choose {
+  width: 60%;
+  height: 60%;
+  margin: 20%;
+  z-index: 4;
+  border-radius: 99px;
+  box-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+  background-color: rgb(255, 255, 255);
+  border: 2px solid black;
+  transition: all 0.2s ease;
+}
+
+.piece-to-choose:hover {
+  width: 90%;
   height: 90%;
-  padding: 10%;
-  border-radius: 50%;
-  background-color: gray;
-  margin-bottom: 2px;
-}
-
-.figureToPromoteStyle:hover {
-  height: 110%;
-  padding: 0%;
-  border-radius: 0;
+  margin: 5%;
+  pointer-events: all;
   background-color: orange;
 }
 
-.moveableStyle {
-  border: none !important;
-  outline: none !important;
+.to-choose-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(400% + 8px);
+  width: 100%;
+  z-index: 4;
+}
+
+.background {
+  z-index: 2;
+  /* pointer-events: none; */
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.clicked-ally {
+  background: radial-gradient(circle closest-side, rgba(0, 255, 0, .5), rgba(0, 255, 0, 0));
+}
+
+.clicked-enemy {
+  background: radial-gradient(circle closest-side, rgba(255, 0, 0, .5), rgba(0, 0, 0, 0));
+}
+
+.check-style {
+  animation: check 1s;
+}
+
+@keyframes check {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: red;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.baseclass {
+  background-color: yellow;
 }

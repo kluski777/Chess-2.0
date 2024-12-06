@@ -1,13 +1,20 @@
-1. Pushować na gita
-2. Email confirmation
-3. 2 users playing:
-    I)      Dodanie pokoju, w którym siedzą userzy. [Jest tylko sie buguje]
-    II)     Dodanie komunikacji WebSocket [TERAZ]
-    III)    Dodanie czasu
-    IV)     Daleka przyszlosc - dodanie komunikacji WebSocket + WebRTC żeby odciążyć serwer
-4. landing site. (nope).
-5. Bugs to be fixed - dangling request in the homePage fetching for pairing constantly.
-
-
-# białe są na dole zawsze, nawet jak są czarne xD
-# czarne zawsze są na górze
+0. Rewrite chess logic and moves so that those will be readable [DONE]
+    a> Check whether it works.
+1. Email confirmation (Jeśli w ogóle)
+2. 2 users playing:
+    I)      Dodanie pokoju, w którym siedzą userzy. [DONE ale sie buguje]
+    I.V)    Podział backenda na pliki. [DONE]
+    II)     Dodanie komunikacji WebSocket [DONE]
+    III)    Dodanie ping pong w wsie + liczenie opóźnień i wywalanie playerów jak na lichess.
+    IV)     Dodanie czasu 
+    MV)     Daleka przyszlosc - dodanie komunikacji WebSocket + WebRTC żeby odciążyć serwer i przyspieszyć działanie
+    MVI)    Daleka przyszlosc - user moze grać kilka partii na raz
+4. Game history saved - moves saved. [DONE]
+5. Ability to play without logging. 
+6. Using only one boardSize (not 2 one in gameContext one in logContext). [TERAZ (Chyba DONE)]
+7. Bugs:
+    a> dangling request in the homePage fetching for pairing constantly.
+    b> No HTTP connection sometimes. 
+    c> Only rook visible when opening the game. /Tak powinno być jeśli user nie zalogowany jest/
+    d> Zablokować dostęp do game'a bez naciśnięcia play.
+    e> Poprawienie grafiki z logowaniem obrzydliwe to jest.
