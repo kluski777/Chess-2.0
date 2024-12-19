@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "backend for chess 2 project",
   "main": "server.js",
   "scripts": {

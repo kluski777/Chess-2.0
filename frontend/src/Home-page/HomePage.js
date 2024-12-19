@@ -10,9 +10,6 @@ import './HomePage.css'
 import darkBackground from './../Assets/mainPage/darkBackground.jpg'
 import brightBackground from './../Assets/mainPage/brightMode.jpg'
 
-// WIEDZIEĆ KIEDY SIDEBAR JEST A KIEDY NIE JEST ROZWINIETY 
-// Rerender taki jak trzeba po zmianie theme'u 
-
 const toggleVariant = ['A', 'B', 'C']; // tu powinny być nazwy wariantów.
 
 export const HomePage = () => {
@@ -48,12 +45,13 @@ export const HomePage = () => {
       if( intervalID.current ) {
         clearCurrentInterval();
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [logState.logState.userInfo]);
 
     const opponentFound = () => {
       clearCurrentInterval();
       setIsLoading(true);
-      navigate('/Game');
+      navigate(`/Game?timeformat=${id}`);
     }
 
     const handleButtonClick = async (e) => {
@@ -128,6 +126,8 @@ export const HomePage = () => {
         id={id}
         variant="outline"
         fontSize="26px"
+        fontFamily='Arial'
+        fontWeight='900'
         width="100%"
         px="10"
         py="20"
@@ -144,8 +144,6 @@ export const HomePage = () => {
         }
       </Button>;
   };
-
-
 
   const BulletGameButton = ({children, id}) => {
     return <ButtonWrapper id={id} timeFormat='Bullet' color={theme.isBright ? 'gray.900' : 'white'} hoverColor={theme.isBright ? '#DF0000' : '#8A0000'}>{children}</ButtonWrapper>

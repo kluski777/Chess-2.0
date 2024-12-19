@@ -11,7 +11,7 @@
     MVI)    Daleka przyszlosc - user moze grać kilka partii na raz
 4. Game history saved - moves saved. [DONE]
 5. Ability to play without logging. 
-6. Using only one boardSize (not 2 one in gameContext one in logContext). [TERAZ (Chyba DONE)]
+6. Using only one boardSize (not 2 one in gameContext one in logContext). [DONE]
 7. Bugs:
     a> dangling request in the homePage fetching for pairing constantly.
     b> No HTTP connection sometimes. 

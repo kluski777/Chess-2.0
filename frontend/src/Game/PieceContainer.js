@@ -50,6 +50,7 @@ const PieceOn = forwardRef(({i, j, pointer, pieceType, isWhite: isPieceWhite}, r
           .filter(ref => ref !== pointer); // it's for react strict purposes only.
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const PieceComponent = PieceComponents[piece];
@@ -112,8 +113,8 @@ const PieceContainer = ({i, j, tileSize, connection}) => {
       pieceClass.current.y += moveY;
       
       const newSquare = document.querySelector(`#square-${pieceClass.current.x}-${pieceClass.current.y}`)
-      const allySide   = pieceClass.current.isPlayer ? 'allyPieces' : 'enemyPieces';
-      const enemySide  = pieceClass.current.isPlayer ? 'enemyPieces' : 'allyPieces';
+      const allySide  = pieceClass.current.isPlayer ? 'allyPieces' : 'enemyPieces';
+      const enemySide = pieceClass.current.isPlayer ? 'enemyPieces' : 'allyPieces';
       
       // Removing enemy piece if taking is on
       if(newSquare.childElementCount) {
@@ -158,9 +159,9 @@ const PieceContainer = ({i, j, tileSize, connection}) => {
   
   return (
     <div
-      id={`piece-${i}-${j}`}
-      className="moveable-container"
-      onClick={e => e.stopPropagation()}
+    id={`piece-${i}-${j}`}
+    className="moveable-container"
+    onClick={e => e.stopPropagation()}
       ref={ownRef}
     >
       <Moveable
@@ -176,12 +177,14 @@ const PieceContainer = ({i, j, tileSize, connection}) => {
         onDragEnd={ async e => {
           pieceClass.current.unclicked();
           imageRef.current.style.transform = ''
-
+          
           // przerzut z pixeli na wartości
           const [moveX, moveY] = [e?.lastEvent?.left, e?.lastEvent?.top].map(value => Math.round(value/tileSize));
-
-          if(await moveFunction(moveX, moveY))
-            connection.send(JSON.stringify({type: 'move', body: moveHistory.current.at(-1)}));
+          
+          if(await moveFunction(moveX, moveY)) {
+            setGameEvents(prev => ({...prev, isWhiteToMove: !prev.isWhiteToMove}));
+            connection.send({type: 'move', body: moveHistory.current.at(-1)});
+          }
         }}
         hideDefaultLines={true}
       />

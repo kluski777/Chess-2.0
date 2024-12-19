@@ -11,14 +11,12 @@ import { Box } from '@chakra-ui/react';
 import { Tile } from './Tile';
 import { Resizable } from 'react-resizable';
 import PieceContainer from './PieceContainer';
-import { LogContext } from '../HandyComponents/LogContext';
+import { useLogContext } from '../HandyComponents/LogContext'
 import InfoTab from './InfoTab';
 import { WebSocketClient } from '../HandyComponents/wsFront';
 
 class Chessboard extends React.PureComponent {
-  static contextType = LogContext;
-
-  constructor(){ // tu musi pójść uogólnienie - zmiana wszystkiego tak naprawdę
+  constructor({logState}) { // tu musi pójść uogólnienie - zmiana wszystkiego tak naprawdę
     super();
     this.state = {
       windowDim: {
@@ -28,14 +26,16 @@ class Chessboard extends React.PureComponent {
       widthAndHeightValue: 0,
     };
 
-    this.ws = null;
+    this.ws = new WebSocketClient(`ws://localhost:5500/Game?username=${logState.userInfo.user}&opponent=${logState.opponent.user}`, boardSize);
+
+    this.logState = logState;
 
     this.state.widthAndHeightValue = this.state.windowDim.width > this.state.windowDim.height ? 0.75*this.state.windowDim.height : 0.75*this.state.windowDim.width;
 
     this.chessboardRef = React.createRef();
   }
 
-  onResize = (e, {size}) => {
+  onResize = (_, {size}) => {
     this.setState({widthAndHeightValue: size.width});
   }
   
@@ -45,12 +45,15 @@ class Chessboard extends React.PureComponent {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
+    this.ws.disconnect();
+    this.ws = null;
   }
 
   render() {
-    const ws = new WebSocketClient(`ws://localhost:5500/Game?username=${this.context.logState.userInfo.user}&opponent=${this.context.logState.opponent.user}`, boardSize);
-    ws.connect();
+    const url = new URLSearchParams(window.location.search);
+    const timeFormat = url.get('timeformat');
     const {widthAndHeightValue} = this.state;
+    this.ws.connect();
 
     return (
       <ThemeContext.Consumer> 
@@ -79,7 +82,7 @@ class Chessboard extends React.PureComponent {
                 padding='0 10px 0 10px'
               >
                 {Array(boardSize).fill(null).map((_, i) => (
-                  <h1 style={{height: `${100/boardSize}%`, top: '50%', color: theme.isBright ? 'black' : 'white'}} key={`vertical-note-${i}`}>{this.context.logState.isUserWhite ? boardSize-i : i+1}</h1>
+                  <h1 style={{height: `${100/boardSize}%`, top: '50%', color: theme.isBright ? 'black' : 'white'}} key={`vertical-note-${i}`}>{this.logState.isUserWhite ? boardSize-i : i+1}</h1>
                 ))}
               </Box>
               <Resizable
@@ -125,7 +128,7 @@ class Chessboard extends React.PureComponent {
                                   i={i}
                                   j={j}
                                   tileSize={widthAndHeightValue/boardSize}
-                                  connection={ws}
+                                  connection={this.ws}
                                 />
                               }
                             </Tile>
@@ -137,7 +140,7 @@ class Chessboard extends React.PureComponent {
                 </div>
               </Resizable>
             </Box>
-            <InfoTab height={widthAndHeightValue}/>
+            <InfoTab timeFormat={timeFormat} height={widthAndHeightValue}/>
           </Box> 
         }
       </ThemeContext.Consumer>
@@ -155,11 +158,12 @@ class Chessboard extends React.PureComponent {
 }
 
 export const Game = ({...props}) => {
-  
+  const {logState} = useLogContext();
+
   // potem się doda różne wersje gry które bd iść razem z propsami.
   return (
     <>
-      <Chessboard/>
+      <Chessboard logState={logState}/>
     </>
   );
 }

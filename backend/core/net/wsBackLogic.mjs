@@ -18,11 +18,11 @@ export function handleConnection(ws, req) {
 
     ws.username = username;
 
-    console.log("======== CONNECTION =============");
-    console.log(`Czy wszedł do któregoś z ifów ${!ws.opponent}`);
-    console.log(`Before the call #${call[username]} of ${username}`);
-    console.log(`${username} Opponent exists ${!!ws.opponent}`);
-    console.log(`${opponentName} Opponent exists ${!!opponentsWS}`);
+    // console.log("======== CONNECTION ==========");
+    // console.log(`Czy wszedł do któregoś z ifów ${!ws.opponent}`);
+    // console.log(`Before the call #${call[username]} of ${username}`);
+    // console.log(`${username} Opponent exists ${!!ws.opponent}`);
+    // console.log(`${opponentName} Opponent exists ${!!opponentsWS}`);
 
     if(opponentsWS && !ws.opponent && !opponentsWS.opponent) {
         ws.opponent = opponentsWS;
@@ -33,10 +33,10 @@ export function handleConnection(ws, req) {
         waitingPlayers[username] = ws;
     }
 
-    console.log(`Po callu`);
-    console.log(`${username} Opponent exists ${!!ws.opponent}`);
-    console.log(`${opponentName} Opponent exists ${!!opponentsWS}`);
-    console.log('\n');
+    // console.log(`Po callu`);
+    // console.log(`${username} Opponent exists ${!!ws.opponent}`);
+    // console.log(`${opponentName} Opponent exists ${!!opponentsWS}`);
+    // console.log('\n');
 
     // Add disconnect handler
     ws.on('close', () => {
@@ -50,11 +50,14 @@ export function handleConnection(ws, req) {
     ws.on('message', (bufferMessage) => {
         if(ws.opponent) {
             try {
-                ws.opponent.send(bufferMessage);
+                const jsonIncoming = JSON.parse(bufferMessage.toString('utf-8'));
+                const currentTimestamp = Date.now();
+                ws.opponent.send(JSON.stringify({...jsonIncoming, oldTimestamp: currentTimestamp}));
+                ws.send(JSON.stringify({type: 'delay', newTimestamp: currentTimestamp, oldTimestamp: jsonIncoming.oldTimestamp}));
             } catch(error) {
                 console.log("Send failed:", error);
             }
-        }
+        } 
     });
 
     // Add connection event handler
@@ -64,16 +67,24 @@ export function handleConnection(ws, req) {
 
     ws.on('close', () => {
         console.log("Connection closed for:", username);
+        clearInterval(interval);
     });
 
     const interval = setInterval(() => {
-        ws.ping(JSON.stringify({type: 'ping', timestamp: Date.now()}));
-    });
+        if (ws.readyState === ws.OPEN) {  // Only added this check
+            ws.ping(JSON.stringify({
+                type: 'ping', 
+                timestamp: Date.now(),
+            }));
+        } else {
+            clearInterval(interval);
+        }
+    }, 500);
 
-    ws.on('ping', (message) => {
+    ws.on('pong', (message) => {
         const oldTimestamp = JSON.parse(message).timestamp;
         const newTimestamp = Date.now();
         const delay = (newTimestamp - oldTimestamp) / 2;
-        console.log(`Incoming delay of ${delay}`)
+        // this is just to inform the guy the same way it works in chess.com 
     });
 };
