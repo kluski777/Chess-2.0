@@ -15,10 +15,9 @@ export class Knight extends Piece {
     }
 
     attack(checkCheck = false) { // jak to dodać?
-        const allyPieces = this.context.playerPieces.current[this.isPlayer ? 'allyPieces' : 'enemyPieces'];
         return [-2, -1, 1, 2].flatMap(i => [-2,-1,1,2]
             .filter(j => Math.abs(i) + Math.abs(j) === 3 && (!checkCheck || this.validateMove(i, j, false)) )
-            .map(j => [this.x + i, this.y + j]));
+            .map(j => [i + this.x, j + this.y]));
     }
 
     canMove(moveX, moveY) {

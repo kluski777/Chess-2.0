@@ -17,6 +17,7 @@ export const GameContextProvider = ({children}) => {
         check: false,
         checkmate: false,
         stalemate: false,
+        endOfTime: false,
     });
 
     const [wsConnection, setWsConnection] = React.useState({

@@ -2,13 +2,13 @@ import React, {useState, useEffect} from 'react';
 import { eventBus } from '../PieceContainer';
 import { Piece } from './Piece';
 import { waitForCondition } from '../../HandyComponents/HandyComponents';
-import { boardSize } from '../../HandyComponents/LogContext';
+import { boardSize } from '../../Contexts/LogContext';
 import "../piece.css"
 
 import whitePawn from '../../Assets/whitePieces/pawn.png';
 import blackPawn from '../../Assets/blackPieces/pawn.png';
 
-// to promote
+// graphics to promote
 import whiteQueen from '../../Assets/whitePieces/queen.png';
 import whiteRook from '../../Assets/whitePieces/rook.png';
 import whiteBishop from '../../Assets/whitePieces/bishop.png';
@@ -23,11 +23,11 @@ export class Pawn extends Piece {
     type = 'Pawn';
 
     constructor({isWhite, i, j, isPlayer}){
-        super({i, j, isPlayer});
+        super({i, j, isPlayer}); // dlaczego jest podwójny call?
         this.graphic = isWhite ? whitePawn : blackPawn;
         this.direction = isPlayer ? -1 : 1;
         this.state = {
-            promotes: 'pawn',
+            promotes: 'Pawn',
             shift: 0,
         }
     }
@@ -42,18 +42,18 @@ export class Pawn extends Piece {
         const movesAllowed = await Promise.all(
             allPossibleMoves.map(async ([x, y]) => ({
                 move: [x, y],
-                valid: await this.canMove(x, y),
+                valid: await this.canMove(x, y, true),
             }))
         );
-        return movesAllowed.filter(({valid}) => valid).map(val => val.move);
+        return movesAllowed.filter(({valid}) => valid).map(val => [val.move[0] + this.x, val.move[1] + this.y]);
     }
 
     attack() { // squares pawn can attack
         return [-1, 1].map(x => [this.x + x, this.y + this.direction]);
     }
 
-    async canMove(moveX, moveY) {
-        const {playerPieces, gameEvents, moveHistory} = this.context;
+    async canMove(moveX, moveY, justChecking = false, chosenPiece = undefined) {
+        const {playerPieces, moveHistory} = this.context;
         const enemyPieces = playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces']
         const isValid = (
             ((moveY === this.direction && !moveX && enemyPieces.every(p => p.current.x !== this.x + moveX || p.current.y !== this.y + moveY)) || 
@@ -61,19 +61,29 @@ export class Pawn extends Piece {
             (Math.abs(moveX) * moveY === this.direction && enemyPieces.some(p => p.current.x === this.x + moveX && p.current.y === this.y + moveY))) &&
             this.validateMove(moveX, moveY)
         );
-        if(isValid && (this.y === boardSize - 1 || this.y === 0)){ // promotion
-            this.setState({promotes: 'promotes',  shift: moveX});
-            await waitForCondition(() => this.state.promotes !== 'promotes', 20); // waiting state to change
-            await waitForCondition(() => this.state.promotes === 'promotes', 100); // waiting for user to choose the piece
+        if(isValid && (this.y + moveY === boardSize - 1 || this.y + moveY === 0) && !justChecking ){ // promotion
+            if(!chosenPiece) {
+                this.setState({promotes: 'promotes',  shift: moveX});
+    
+                await waitForCondition(() => this.state.promotes !== 'promotes', 20); // waiting state to change
+                await waitForCondition(() => this.state.promotes === 'promotes', 50); // waiting for user to choose the piece
+    
+                if(this.state.promotes === 'Pawn') // no new piece chosen
+                    return false; // invalid move, no piece chosen
+            }
 
-            if(this.state.promotes === 'Pawn') // no new piece chosen
-                return false; // invalid move
+            console.log(`In the Pawn sending to emit => ${chosenPiece ?? this.state.promotes}`)
 
             eventBus.emit(`setStates-${this.props.i}-${this.props.j}`, {
-                type: this.state.promotes,
+                type: chosenPiece ?? this.state.promotes,
                 isPieceWhite: this.props.isWhite,
-            }); // changes piece type
+                posX: this.x + moveX,
+                posY: this.y + moveY,
+            }); // immediately change pieceType
         }
+
+        if( this.y === boardSize - 1 || this.y === 0 )
+            return ; // tego calla nie powinno w ogóle być lol
         
         const lastMove = moveHistory.current.at(-1)?.Pawn;
         const secondLastMove = moveHistory.current.at(-2)?.Pawn?.finalSquares;
@@ -85,8 +95,10 @@ export class Pawn extends Piece {
             lastMove?.move?.y === -2*this.direction && 
             !this.isAtCheck(moveX, moveY)
         ) {
-            document.querySelector(`#square-${this.x + moveX}-${this.y}`).replaceChildren();
-            playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces'] = enemyPieces.filter(p => p.current.x !== this.x + moveX || p.current.y !== this.y);
+            if(!justChecking) {
+                document.querySelector(`#square-${this.x + moveX}-${this.y}`).replaceChildren();
+                playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces'] = enemyPieces.filter(p => p.current.x !== this.x + moveX || p.current.y !== this.y);
+            }
         
             return true; // pawn takes enPassant allowed
         }
@@ -100,35 +112,36 @@ export class Pawn extends Piece {
 
     render(){
         const {Background} = this;
+        
         return (
             <>
                 {this.state.promotes === 'promotes' ?
                     <>
                         <Background/>
                         <div
-                            className='to-choose-container' 
+                            className='to-choose-container'
                             style={{transform: `translate(${this.state.shift*100}%,${this.isPlayer ? '12.5%' : '-12.5%'})`}}
                         >
                             <img
-                                className={`piece-to-choose`}
+                                className='piece-to-choose'
                                 alt='queen-to-choose'
                                 onClick={() => this.setState({promotes: 'Queen'})}
                                 src={this.props.isWhite ? whiteQueen : blackQueen}
                             />
                             <img
-                                className={`piece-to-choose`}
+                                className='piece-to-choose'
                                 alt='rook-to-choose'
                                 onClick={() => this.setState({promotes: 'Rook'})}
                                 src={this.props.isWhite ? whiteRook : blackRook}
                             />
                             <img
-                                className={`piece-to-choose`}
+                                className='piece-to-choose'
                                 alt='bishop-to-choose'
                                 onClick={() => this.setState({promotes: 'Bishop'})}
                                 src={this.props.isWhite ? whiteBishop : blackBishop}
                             />
                             <img
-                                className={`piece-to-choose`}
+                                className='piece-to-choose'
                                 alt='knight-to-choose'
                                 onClick={() => this.setState({promotes: 'Knight'})}
                                 src={this.props.isWhite ? whiteKnight : blackKnight}

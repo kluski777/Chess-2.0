@@ -1,6 +1,6 @@
 import React from 'react';
 import { Piece } from './Piece';
-import { boardSize } from '../../HandyComponents/LogContext';
+import { boardSize } from '../../Contexts/LogContext';
 import "../piece.css"
 
 import blackBishop from '../../Assets/blackPieces/bishop.png';

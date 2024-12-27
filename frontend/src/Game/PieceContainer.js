@@ -1,9 +1,11 @@
-import { useLogContext } from '../HandyComponents/LogContext';
-import { beginPositions } from './rules/beginningPositions';
-import { useGameContext } from './gameContext';
-import Moveable from 'react-moveable';
-import { boardSize } from '../HandyComponents/LogContext';
+import { useMoveMarkersContext } from '../Contexts/moveMarkersContext';
 import { useState, useRef, useEffect, forwardRef } from 'react';
+import { beginPositions } from './rules/beginningPositions';
+import { useGameContext } from '../Contexts/gameContext';
+import { useLogContext } from '../Contexts/LogContext';
+import { boardSize } from '../Contexts/LogContext';
+import Moveable from 'react-moveable';
+import isEqual from 'fast-deep-equal';
 import './piece.css';
 
 import { Knight } from './Pieces/Knight';
@@ -12,6 +14,11 @@ import { Queen } from './Pieces/Queen';
 import { King } from './Pieces/King';
 import { Rook } from './Pieces/Rook';
 import { Pawn } from './Pieces/Pawn';
+
+const defaultPieceObject = {
+  isPieceWhite: undefined,
+  type: undefined,
+}
 
 const PieceComponents = {
   Pawn,
@@ -23,19 +30,17 @@ const PieceComponents = {
 };
 
 // da sie to zrobić jakoś ładnie i szybko?
-const PieceOn = forwardRef(({i, j, pointer, pieceType, isWhite: isPieceWhite}, ref) => {
+const PieceOn = forwardRef(({i, j, pointer, pieceInfo}, ref) => {
   const gameContext = useGameContext();
   const {logState} = useLogContext();
-
-  const isWhite = isPieceWhite ?? ((logState.isUserWhite && j > boardSize/2) || (!logState.isUserWhite && j < boardSize/2));
-  const piece = pieceType ?? beginPositions['variant a'][j][i];
+  const isWhite = pieceInfo.isPieceWhite ?? ((logState.isUserWhite && j > boardSize/2) || (!logState.isUserWhite && j < boardSize/2));
+  const piece = pieceInfo.type ?? beginPositions['variant a'][j][i];
 
   const commonProps = {
     isWhite: isWhite,
     pointer: ref,
-    ref: pointer,
-    i: pointer?.current?.x ?? i,
-    j: pointer?.current?.y ?? j, 
+    i: pieceInfo?.posX ?? i,
+    j: pieceInfo?.posY ?? j, 
     isPlayer: pointer?.current?.isPlayer ?? j > boardSize/2
   }
 
@@ -47,14 +52,14 @@ const PieceOn = forwardRef(({i, j, pointer, pieceType, isWhite: isPieceWhite}, r
       
       return () => {
         gameContext.playerPieces.current[arrayKey] = gameContext.playerPieces.current[arrayKey]
-          .filter(ref => ref !== pointer); // it's for react strict purposes only.
+        .filter(ref => ref !== pointer); // it's for react strict purposes only.
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [j, pointer]);
 
   const PieceComponent = PieceComponents[piece];
-  return <PieceComponent {...commonProps}/>
+  return <PieceComponent {...commonProps} ref={pointer}/>
 });
 
 export const moveFunctions = {
@@ -82,14 +87,14 @@ export const eventBus = {
 }
 
 const PieceContainer = ({i, j, tileSize, connection}) => {
-  const {playerPieces, gameEvents, setGameEvents, moveHistory} = useGameContext();
+  const { setUpdateFunction, markerPositions, setMarkerPositions } = useMoveMarkersContext();
+  const { playerPieces, gameEvents, setGameEvents, moveHistory } = useGameContext();
+  const { logState: {isUserWhite} } = useLogContext();
   const imageRef = useRef(null);
   const ownRef = useRef(null);
   const pieceClass = useRef(null);
-  const [piece, setPiece] = useState({ // Only for pawn it should be present
-    isPieceWhite: undefined,
-    type: undefined,
-  });
+  const [isReady, setIsReady] = useState(false);
+  const [piece, setPiece] = useState(defaultPieceObject);
 
   const isKingChecked = (allySide, enemySide) => { // so dirty
     const [[enemyKingX, enemyKingY]] = playerPieces.current[enemySide].filter(p => p.current.type === 'King').map(obj => [obj.current.x, obj.current.y]); // get the king
@@ -105,13 +110,16 @@ const PieceContainer = ({i, j, tileSize, connection}) => {
     return false;
   }
 
-  const moveFunction = async (moveX, moveY) => {
-    if ( await pieceClass?.current.canMove(moveX, moveY) ) { // check if the move is legal
+  const moveFunction = async (moveX, moveY, promotes = '') => {
+    let condition = promotes ? await pieceClass?.current.canMove(moveX, moveY, false, promotes) : await pieceClass?.current.canMove(moveX, moveY);
+
+    if ( condition ) { // check if the move is legal
       const oldSquare = document.querySelector(`#square-${pieceClass.current.x}-${pieceClass.current.y}`);
-      
+
+      // w przypadku premove'a tego to ja nie chce
       pieceClass.current.x += moveX;
       pieceClass.current.y += moveY;
-      
+
       const newSquare = document.querySelector(`#square-${pieceClass.current.x}-${pieceClass.current.y}`)
       const allySide  = pieceClass.current.isPlayer ? 'allyPieces' : 'enemyPieces';
       const enemySide = pieceClass.current.isPlayer ? 'enemyPieces' : 'allyPieces';
@@ -127,74 +135,116 @@ const PieceContainer = ({i, j, tileSize, connection}) => {
         newSquare.replaceChildren(ownRef.current);
       }
       
+      // update moveHistory with the newest move
       moveHistory.current.push({[pieceClass.current.type]: {finalSquares: {x: pieceClass.current.x, y: pieceClass.current.y}, move: {x: moveX, y: moveY} }});
       
+      // check whether it's the end of the game
       const isEndOfTheGame = await Promise
         .all(playerPieces.current[enemySide].map(async p => await p.current.possibleMoves() ))
         .then(moves => moves.every(moveArray => moveArray.length === 0));
 
-      if( isKingChecked(allySide, enemySide) ) // czy szach?
-        if( isEndOfTheGame ) // czy mat?
+      // checking check, checkamte, stalemate
+      if( isKingChecked(allySide, enemySide) ) // check
+        if( isEndOfTheGame ) // checkmate
           setGameEvents(prev => ({...prev, checkmate: true}));
-      else if(isEndOfTheGame) // czy pat?
+      else if(isEndOfTheGame) // stalemate
         setGameEvents(prev => ({...prev, stalemate: true}));
 
-      moveFunctions.replaceFunction( // z całą pewnością działa, zostało sprawdzone
+      // relace position of the moveFunction
+      moveFunctions.replaceFunction(
         `${pieceClass.current.x - moveX}-${pieceClass.current.y - moveY}`, 
-        `${pieceClass.current.x}-${pieceClass.current.y}`
+        `${pieceClass.current.x}-${pieceClass.current.y}`,
       );
-
-      return true;
+      
+      setMarkerPositions([]);
+      
+      return true; // move possible, piece will be moved
     }
-    return false;
+    return false; // move forbidden
+  }
+
+  const makeMove = async (moveX, moveY) => { 
+    if(gameEvents.isWhiteToMove === pieceClass.current.props.isWhite && gameEvents.isWhiteToMove === isUserWhite  && await moveFunction(moveX, moveY)) { // player move
+      setGameEvents(prev => ({...prev, isWhiteToMove: !prev.isWhiteToMove}));
+      if(pieceClass.current.state.promotes !== 'Pawn' && pieceClass.current.state.promotes !== 'promotes') {
+        connection.send({type: 'move', body: moveHistory.current.at(-1), promotes: pieceClass.current.state.promotes})
+      } else {
+        connection.send({type: 'move', body: moveHistory.current.at(-1)});
+      }
+    } else if(gameEvents.isWhiteToMove !== isUserWhite && (moveX || moveY)) { // premove
+      // premove TODO
+    }
+  }
+
+  const finishClickMove = (squareX, squareY) => {
+    const [moveX, moveY] = [squareX - pieceClass.current.x, squareY - pieceClass.current.y];
+    makeMove(moveX, moveY);
+  }
+
+  const setMarkers = async () => {
+    const possibleMoves = await pieceClass.current.possibleMoves();
+
+    if( isEqual(possibleMoves, markerPositions) ) {
+      setMarkerPositions([]);
+    } else {
+      setMarkerPositions(possibleMoves);
+      setUpdateFunction(() => finishClickMove);
+    }
   }
 
   useEffect(() => {
-    return eventBus.subscribe(`setStates-${i}-${j}`, setPiece);
+    return eventBus.subscribe(`setStates-${i}-${j}`, (newProps) => {
+      setPiece(newProps);
+      console.trace(`State from the square ${i}-${j} was updated to `, newProps);
+    });
   }, [i, j]);
 
   useEffect(() => {
     moveFunctions.functions[`${i}-${j}`] = moveFunction;
   }, [i, j]);
-  
+
+  useEffect(() => {
+    if(imageRef.current) {
+      setIsReady(true);
+    }
+  }, []);
+
   return (
     <div
-    id={`piece-${i}-${j}`}
-    className="moveable-container"
-    onClick={e => e.stopPropagation()}
+      id={`piece-${i}-${j}`}
+      className="moveable-container"
+      onClick={e => e.stopPropagation()}
       ref={ownRef}
     >
-      <Moveable
-        draggable={true}
-        origin={false}
-        target={imageRef}
-        onDrag={e => {
-          e.target.style.transform = e.transform
-        }}
-        onDragStart={_ => {
-          pieceClass.current.clicked();
-        }}
-        onDragEnd={ async e => {
-          pieceClass.current.unclicked();
-          imageRef.current.style.transform = ''
-          
-          // przerzut z pixeli na wartości
-          const [moveX, moveY] = [e?.lastEvent?.left, e?.lastEvent?.top].map(value => Math.round(value/tileSize));
-          
-          if(await moveFunction(moveX, moveY)) {
-            setGameEvents(prev => ({...prev, isWhiteToMove: !prev.isWhiteToMove}));
-            connection.send({type: 'move', body: moveHistory.current.at(-1)});
-          }
-        }}
-        hideDefaultLines={true}
-      />
+      {isReady &&
+        <Moveable
+          draggable={true}
+          origin={false}
+          dragTarget={imageRef}
+          target={imageRef}
+          onDrag={e => e.target.style.transform = e.transform}
+          onDragStart={_ => pieceClass.current.clicked()}
+          onDragEnd={ async e => {
+            pieceClass.current.unclicked();
+            imageRef.current.style.transform = '';
+            
+            if(!e?.lastEvent?.left) return; // it's not a drag move, just a click
+
+            // przerzut z pixeli na wartości
+            const [moveX, moveY] = [e?.lastEvent?.left, e?.lastEvent?.top].map(value => Math.round(value/tileSize));
+            
+            makeMove(moveX, moveY);
+          }}
+          onClick={setMarkers}
+          hideDefaultLines={true}
+        />
+      }
       <PieceOn
-        i={i}
+        i={i} // i and j are wrong when promoting to a queen
         j={j}
         ref={imageRef}
         pointer={pieceClass}
-        isPieceWhite={piece.isPieceWhite}
-        pieceType={piece.type}
+        pieceInfo={piece}
       />
     </div>
   )

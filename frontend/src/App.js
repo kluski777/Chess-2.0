@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { HomePage } from './Home-page/HomePage'
 import { CustomGame } from './Room/CustomGame'
 import { Game } from './Game/Game'
-import { GameContextProvider } from './Game/gameContext';
+import { GameContextProvider } from './Contexts/gameContext';
 import { LoggingContainer } from './Login/LoggingContainer'
 
 function App() {
@@ -18,7 +18,9 @@ function App() {
     return (
       <div style={{width:'100%', height:'100%'}}>
         <Sidebar/>
-        {children}
+        <div style={{position: 'absolute', width: 'calc(100% - 100px)', height: '100%', right: '', left: '100px'}}>
+          {children}
+        </div>
       </div>
     )
   }

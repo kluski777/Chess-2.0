@@ -7,11 +7,11 @@
 }
 
 .piece-to-choose, .piece {
+  user-select: none;
   z-index: 2;
-  padding: 2.5%;
   width: 100%;
   height: 100%;
-  cursor: pointer;
+  cursor: grab;
 }
 
 .piece-to-choose {

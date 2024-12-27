@@ -1,9 +1,9 @@
 import {Button, Box, Table, Tbody, Tr, Td} from '@chakra-ui/react'
-import {useThemeContext} from '../HandyComponents/themeContext'
+import {useThemeContext} from '../Contexts/themeContext'
 import React from 'react'
 import {CenteredCell} from './../HandyComponents/HandyComponents'
 import {CustomGame} from './../Room/CustomGame'
-import {useLogContext} from '../HandyComponents/LogContext'
+import {useLogContext} from '../Contexts/LogContext'
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css'
 

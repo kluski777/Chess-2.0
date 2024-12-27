@@ -1,6 +1,6 @@
 import React from 'react';
 import { Piece } from './Piece';
-import { boardSize } from '../../HandyComponents/LogContext';
+import { boardSize } from '../../Contexts/LogContext';
 import "../piece.css"
 
 import blackRook from '../../Assets/blackPieces/rook.png';
@@ -18,8 +18,7 @@ export class Rook extends Piece {
     attack(checkCheck = false) {
         const {playerPieces : {current}} = this.context;
         const pieces = [...current.allyPieces, ...current.enemyPieces];
-        const alliedPieces = current[this.isPlayer ? 'allyPieces' : 'enemyPieces'];
-
+        
         let iterContinue = {left: true, right: true, up: true, down: true};
         let moves = [];
 

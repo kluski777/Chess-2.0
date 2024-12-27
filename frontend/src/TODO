@@ -1,20 +1,59 @@
 0. Rewrite chess logic and moves so that those will be readable [DONE]
-    a> Check whether it works.
+    a> Check whether it works. [DONE]
+    b> Fix promoting. Let the pawn upgrade to queen. [DONE]
+        I. Dlaczego queen się robi dla złych 'i' i 'j'. 
+            > nie robi dla złych i i j tylko dla złych pieceClass.currrent.x.
+        II. Robi dla dobrych 'i' i 'j' ale nie tworzy nowej figury, chociaż ją calluje.
+    c> Fix it for the opponent [DONE].
 1. Email confirmation (Jeśli w ogóle)
 2. 2 users playing:
-    I)      Dodanie pokoju, w którym siedzą userzy. [DONE ale sie buguje]
+    I)      Dodanie pokoju, w którym siedzą userzy. [DONE] (Pozbyć się bugów przy pairingu)
     I.V)    Podział backenda na pliki. [DONE]
     II)     Dodanie komunikacji WebSocket [DONE]
-    III)    Dodanie ping pong w wsie + liczenie opóźnień i wywalanie playerów jak na lichess.
-    IV)     Dodanie czasu 
+    III)    Dodanie ping pong w wsie + liczenie opóźnień i wywalanie playerów jak na lichess, animacja jak na chess.com. [LATER]
+    IV)     Dodanie czasu [DONE]
     MV)     Daleka przyszlosc - dodanie komunikacji WebSocket + WebRTC żeby odciążyć serwer i przyspieszyć działanie
     MVI)    Daleka przyszlosc - user moze grać kilka partii na raz
 4. Game history saved - moves saved. [DONE]
 5. Ability to play without logging. 
 6. Using only one boardSize (not 2 one in gameContext one in logContext). [DONE]
-7. Bugs:
+7. Bugs: [TERAZ]
     a> dangling request in the homePage fetching for pairing constantly.
-    b> No HTTP connection sometimes. 
+    b> No HTTP connection sometimes.
     c> Only rook visible when opening the game. /Tak powinno być jeśli user nie zalogowany jest/
     d> Zablokować dostęp do game'a bez naciśnięcia play.
     e> Poprawienie grafiki z logowaniem obrzydliwe to jest.
+    f> Chessboard inactive after putting to a game. [FIXED]
+    g> When click and unclick game mode, two players are black. 
+    h> White can move black piece using click move. [FIXED]
+8. White moves only when it's his turn to do so [DONE].
+9. Add premoves: [LATER]
+    a> Lichess alike one mover. [LATER]
+    c> unconditional premoves
+    b> Stack premoves including conditional premoves - if opponent moves certain way
+10. Add moves after clicking on a piece. [DONE]
+
+
+
+
+X. What to add in infoTab
+    Username/Nickname
+    Country/Location
+    Rating/Elo Score
+    Customization/Avatar
+    Age
+    Gender
+    Playing History
+    Preferred Time Controls
+    Favorite Openings
+    Activity Patterns
+    Languages Spoken
+    Profile Bio/Interests
+    Friends/Followers Count
+    Last Active Timestamp
+    Preferred Chess Variants
+    Device/Platform Used
+    Achievements/Awards
+    Communication Style
+    Timezone
+    Account Age

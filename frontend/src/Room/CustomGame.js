@@ -6,7 +6,7 @@ import {
 } from '@chakra-ui/react';
 import {Link} from 'react-router-dom';
 import {CenteredCell, CenteredLabel} from '../HandyComponents/HandyComponents'; 
-import {useThemeContext} from '../HandyComponents/themeContext';
+import {useThemeContext} from '../Contexts/themeContext';
 
 export const CustomGame = ({variant, top, left, transform}) => {
   const timeSliderRef = React.useRef(null);

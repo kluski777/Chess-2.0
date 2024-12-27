@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import {ThemeContextProvider} from './HandyComponents/themeContext';
-import {LogContextProvider} from './HandyComponents/LogContext'
+import {ThemeContextProvider} from './Contexts/themeContext';
+import {LogContextProvider} from './Contexts/LogContext'
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
 const myChakraTheme = extendTheme({
@@ -36,15 +36,13 @@ const myChakraTheme = extendTheme({
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <ChakraProvider theme={myChakraTheme}>
-      <ThemeContextProvider>
-        <LogContextProvider>
-          <App/>
-        </LogContextProvider>
-      </ThemeContextProvider>
-    </ChakraProvider>
-  </React.StrictMode>
+  <ChakraProvider theme={myChakraTheme}>
+    <ThemeContextProvider>
+      <LogContextProvider>
+        <App/>
+      </LogContextProvider>
+    </ThemeContextProvider>
+  </ChakraProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

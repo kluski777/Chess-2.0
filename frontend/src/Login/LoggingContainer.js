@@ -3,8 +3,8 @@ import './logForm.css';
 import {Login} from './LogIn.js';
 import {SignUp} from './Signup.js';
 import { useNavigate } from 'react-router-dom';
-import {useThemeContext} from '../HandyComponents/themeContext.js';
-import { useLogContext } from '../HandyComponents/LogContext.js'
+import {useThemeContext} from '../Contexts/themeContext.js';
+import { useLogContext } from '../Contexts/LogContext.js'
 import {HomePage} from '../Home-page/HomePage.js'
 
 const notFoundUserPrefix  = 'What'

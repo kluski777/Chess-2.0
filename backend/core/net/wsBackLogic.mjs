@@ -57,7 +57,7 @@ export function handleConnection(ws, req) {
             } catch(error) {
                 console.log("Send failed:", error);
             }
-        } 
+        }
     });
 
     // Add connection event handler

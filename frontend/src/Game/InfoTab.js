@@ -1,22 +1,25 @@
 import React from 'react';
-import { useLogContext } from '../HandyComponents/LogContext';
-import { useThemeContext } from '../HandyComponents/themeContext';
-import { useGameContext } from './gameContext';
+import { useLogContext } from '../Contexts/LogContext';
+import { useThemeContext } from '../Contexts/themeContext';
+import { useGameContext } from '../Contexts/gameContext';
 
 export let timeControl = null;
 
 const InfoTab = ({height, timeFormat}) => {
+    // imports
     const {logState: {userInfo, opponent, isUserWhite}} = useLogContext();
-    const {gameEvents, moveHistory} = useGameContext();
+    const {gameEvents, setGameEvents, moveHistory} = useGameContext();
     const theme = useThemeContext();
     
+    // time related variables
     const minutesTime = Number(timeFormat.split(' ')[0]);
     const increment = Number(timeFormat.split(' ')[1]);
 
+    // user times
     const [userTime, setUserTime] = React.useState(minutesTime * 60 * 1000);
     const [opponentTime, setOpponentTime] = React.useState(minutesTime * 60 * 1000);
 
-    React.useEffect(() => {
+    React.useEffect(() => { // called each move
         if( isUserWhite === gameEvents.isWhiteToMove ) {
             timeControl = (delay) => setUserTime(prev => prev - delay + increment);
         } else {
@@ -25,20 +28,44 @@ const InfoTab = ({height, timeFormat}) => {
     }, [setOpponentTime, setUserTime, isUserWhite, gameEvents.isWhiteToMove, increment]);
 
     React.useEffect(() => {
-        let interval = null;
-
-        if(isUserWhite === gameEvents.isWhiteToMove && moveHistory.current.length > 0) {
-            interval = setInterval(() => {
-                setUserTime(userTime - 1000);
-            }, 1000);
-        } else if(moveHistory.current.length > 0) {
-            interval = setInterval(() => {
-                setOpponentTime(opponentTime - 1000);
-            }, 1000);
+        if (moveHistory.current.length === 0) return;
+    
+        const isUserTurn = isUserWhite === gameEvents.isWhiteToMove;
+        const currentTime = isUserTurn ? userTime : opponentTime;
+        const setTime = isUserTurn ? setUserTime : setOpponentTime;
+    
+        if (currentTime <= 0) {
+            setTime(0);
+            setGameEvents({...gameEvents, endOfTime: true});
+            return;
         }
-
-        return () => clearInterval(interval);
-    }, [opponentTime, gameEvents.isWhiteToMove, isUserWhite, userTime, moveHistory]);
+    
+        // Store initial values
+        const startTime = performance.now();
+        const initialTime = currentTime;
+        let frameId;
+    
+        function animate() {
+            const elapsed = performance.now() - startTime;
+            const newTime = Math.max(0, initialTime - elapsed);
+            
+            // Update less frequently when time is > 20 seconds
+            if (newTime > 20_000 && isUserWhite === gameEvents.isWhiteToMove ) {
+                setTime(newTime);
+                frameId = setTimeout(() => {
+                    requestAnimationFrame(animate);
+                }, 1000);
+            } else if(isUserWhite !== gameEvents.isWhiteToMove) {
+                // More precise updates for last 20 seconds
+                setTime(newTime);
+                frameId = requestAnimationFrame(animate);
+            }
+        }
+    
+        frameId = requestAnimationFrame(animate);
+    
+        return () => cancelAnimationFrame(frameId);
+    }, [gameEvents.isWhiteToMove, isUserWhite, moveHistory]);
 
     const container = {
         display: 'flex',
@@ -49,7 +76,8 @@ const InfoTab = ({height, timeFormat}) => {
         width: '20%',
         maxWidth: '360px',
         minWidth: '200px',
-        height: '100%'       // Ensure container takes full height
+        height: '100%',
+        userSelect: 'none',
     };
     
     const tabStyle = {
@@ -107,25 +135,33 @@ const InfoTab = ({height, timeFormat}) => {
     }
 
     const TimeToComponent = (timeState) => {
-        const minutes = Math.floor( timeState / (60 * 1000) );
-        const seconds = timeState - minutes * 60 * 1000;
+        let timeOnLeft, timeOnRight, timeTrouble = false;
+        
+        if( timeState < 20*1000 ) {
+            timeTrouble = true;
+            timeOnLeft = Math.floor( timeState / 1000 ); // seconds
+            timeOnRight = Math.floor(timeState % 1000); // miliseconds
+        } else {
+            timeOnLeft = Math.floor( timeState / (60 * 1000) ); // minutes
+            timeOnRight = timeState - timeOnLeft * 60 * 1000; // seconds
+        }
+
         return ( // tak długość na 4-ish
-            <div style={clock}>
+            <div style={{...clock, backgroundColor: `${timeTrouble ? 'red' : ''}`}}>
                 <div style={number}>
-                    {Math.floor(minutes / 10)}
+                    {Math.floor(timeOnLeft / 10)}
                 </div>
                 <div style={number}>
-                    {minutes % 10}
+                    {timeOnLeft % 10}
                 </div>
                 <div style={{...number, width: '4px'}}>
-                    :
+                    {timeTrouble ? '.' : ':'}
                 </div>
                 <div style={number}>
-                    {Math.floor(seconds / 10000)}
+                    {timeTrouble ? Math.floor((timeOnRight % 1000) / 100) : Math.floor(timeOnRight / 10000)}
                 </div>
                 <div style={number}>
-                    {Math.floor(seconds / 1000) % 10} 
-                    {/* to będzie za długie */}
+                    {timeTrouble ? Math.floor((timeOnRight % 100) / 10) : Math.floor(timeOnRight / 1000) % 10}
                 </div>
             </div>
         )

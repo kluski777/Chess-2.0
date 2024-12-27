@@ -1,6 +1,6 @@
 import React from 'react';
 import { Piece } from './Piece';
-import { boardSize } from '../../HandyComponents/LogContext';
+import { boardSize } from '../../Contexts/LogContext';
 import "../piece.css"
 
 import blackKing from '../../Assets/blackPieces/king.png';
@@ -26,8 +26,8 @@ export class King extends Piece {
         }
     }
 
-    attack(checkCheck = false) {
-        return [-1, 0, 1].flatMap(i => [-1, 0, 1].filter(j => (i !== 0 || j !== 0) && (!checkCheck || this.validateMove(i, j)) ).map(j => [i, j]));
+    attack(checkCheck = false) { // roszady nie pokazuje
+        return [-1, 0, 1].flatMap(i => [-1, 0, 1].filter(j => (i !== 0 || j !== 0) && (!checkCheck || this.validateMove(i, j)) ).map(j => [i + this.x, j + this.y]));
     }
 
     canMove(moveX, moveY) {

@@ -1,6 +1,6 @@
 import { moveFunctions } from "../Game/PieceContainer";
-import { boardSize } from "./LogContext";
-import { gameStates } from "../Game/gameContext";
+import { boardSize } from "../Contexts/LogContext";
+import { gameStates } from "../Contexts/gameContext";
 import { timeControl } from "../Game/InfoTab";
 
 export class WebSocketClient { // najpierw dajmy tak żeby user grał tylko jedną partię na raz potem się zmieni
@@ -41,7 +41,10 @@ export class WebSocketClient { // najpierw dajmy tak żeby user grał tylko jedn
                     gameStates.set(prev => ({...prev, isWhiteToMove: !prev.isWhiteToMove}));
                     timeControl(messageJSON.oldTimestamp - Date.now());
                     
-                    await moveFunctions.functions[key](content.move.x, -content.move.y);
+                    console.log("Sending...");
+                    console.trace(messageJSON?.promotes ?? '');
+
+                    await moveFunctions.functions[key](content.move.x, -content.move.y, messageJSON?.promotes ?? '');
                 }
             } catch(error) {
                 console.log("Error caught in wsClass.js:", error);

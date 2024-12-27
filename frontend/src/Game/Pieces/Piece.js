@@ -1,7 +1,7 @@
 import { Component, } from "react";
 import "../piece.css"
-import { GameContext } from "../gameContext";
-import { boardSize } from "../../HandyComponents/LogContext";
+import { GameContext } from "../../Contexts/gameContext";
+import { boardSize } from "../../Contexts/LogContext";
 
 export class Piece extends Component {
     static contextType = GameContext; 
@@ -36,9 +36,9 @@ export class Piece extends Component {
     }
 
     validateMove(moveX, moveY, isNotKnight = true) {
-        const { playerPieces} = this.context;
-        const [newX, newY] = [this.x + moveX, this.y + moveY];
-        const [dx, dy] = [Math.sign(moveX), Math.sign(moveY)];
+        const { playerPieces } = this.context;
+        const [ newX, newY ] = [this.x + moveX, this.y + moveY];
+        const [ dx, dy ] = [Math.sign(moveX), Math.sign(moveY)];
 
         // Early returns for basic validations
         if (newX < 0 || newY < 0 || newX >= boardSize || newY >= boardSize) return false;
@@ -47,10 +47,10 @@ export class Piece extends Component {
     
         // Check path collision for non-knight pieces
         if (isNotKnight) {
-            let [x, y] = [this.x + dx, this.y + dy];
-            const allPieces = [...playerPieces.current.allyPieces, ...playerPieces.current.enemyPieces]
+            let [ x, y ] = [ this.x + dx, this.y + dy ];
+            const allPieces = [...playerPieces.current.allyPieces, ...playerPieces.current.enemyPieces];
             while (x !== newX || y !== newY) {
-                if (allPieces.some(p => p.current.x === x && p.current.y === y)) return false;
+                if (allPieces.some(p => p.current?.x === x && p.current?.y === y)) return false;
                 x += dx;
                 y += dy;
             }
@@ -66,16 +66,10 @@ export class Piece extends Component {
     }
 
     unclicked() {
-        this.setState({
-            backgroundStyle: '',
-        });
+        this.setState({backgroundStyle: ''});
     }
 
     render() {
-        return (
-            <div>
-                {this.props.children}
-            </div>
-        )
+        return <> {this.props.children} </>
     }   
 }
