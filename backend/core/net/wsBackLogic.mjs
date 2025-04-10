@@ -53,7 +53,10 @@ export function handleConnection(ws, req) {
                 const jsonIncoming = JSON.parse(bufferMessage.toString('utf-8'));
                 const currentTimestamp = Date.now();
                 ws.opponent.send(JSON.stringify({...jsonIncoming, oldTimestamp: currentTimestamp}));
-                ws.send(JSON.stringify({type: 'delay', newTimestamp: currentTimestamp, oldTimestamp: jsonIncoming.oldTimestamp}));
+                
+                if(jsonIncoming.type === 'move') { // przerobić to kurwa... chujowo napisane wszystko
+                    ws.send(JSON.stringify({type: 'delay', newTimestamp: currentTimestamp, oldTimestamp: jsonIncoming.oldTimestamp}));
+                }
             } catch(error) {
                 console.log("Send failed:", error);
             }

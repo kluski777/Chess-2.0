@@ -11,7 +11,7 @@ export const GameContextProvider = ({children}) => {
     });
 
     const moveHistory = React.useRef([]); // {figura: {finalSquares, move}}
-
+    
     const [gameEvents, setGameEvents] = React.useState({
         isWhiteToMove: true,
         check: false,

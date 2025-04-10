@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { eventBus } from '../PieceContainer';
+import { eventBus } from '../PieceOn';
 import { Piece } from './Piece';
 import { waitForCondition } from '../../HandyComponents/HandyComponents';
 import { boardSize } from '../../Contexts/LogContext';
@@ -52,18 +52,18 @@ export class Pawn extends Piece {
         return [-1, 1].map(x => [this.x + x, this.y + this.direction]);
     }
 
-    async canMove(moveX, moveY, justChecking = false, chosenPiece = undefined) {
+    async canMove(moveX, moveY, justChecking = false, chosenPiece = undefined, premove = false) {
         const {playerPieces, moveHistory} = this.context;
-        const enemyPieces = playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces']
+        const enemyPieces = playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces'];
         const isValid = (
-            ((moveY === this.direction && !moveX && enemyPieces.every(p => p.current.x !== this.x + moveX || p.current.y !== this.y + moveY)) || 
-            (moveY === 2*this.direction && !moveX && this.y%(boardSize - 3) === 1 && enemyPieces.every(p => p.current.x !== this.x + moveX || p.current.y !== this.y + moveY)) ||
-            (Math.abs(moveX) * moveY === this.direction && enemyPieces.some(p => p.current.x === this.x + moveX && p.current.y === this.y + moveY))) &&
-            this.validateMove(moveX, moveY)
+            ((moveY === this.direction && !moveX && (premove || enemyPieces.every(p => p.current.x !== this.x + moveX || p.current.y !== this.y + moveY))) || 
+            (moveY === 2*this.direction && !moveX && this.y%(boardSize - 3) === 1 && (premove || enemyPieces.every(p => p.current.x !== this.x + moveX || p.current.y !== this.y + moveY))) ||
+            (Math.abs(moveX) * moveY === this.direction && (premove || enemyPieces.some(p => p.current.x === this.x + moveX && p.current.y === this.y + moveY)))) &&
+            (premove || this.validateMove(moveX, moveY))
         );
         if(isValid && (this.y + moveY === boardSize - 1 || this.y + moveY === 0) && !justChecking ){ // promotion
             if(!chosenPiece) {
-                this.setState({promotes: 'promotes',  shift: moveX});
+                this.setState({promotes: 'promotes', shift: moveX});
     
                 await waitForCondition(() => this.state.promotes !== 'promotes', 20); // waiting state to change
                 await waitForCondition(() => this.state.promotes === 'promotes', 50); // waiting for user to choose the piece
@@ -72,34 +72,31 @@ export class Pawn extends Piece {
                     return false; // invalid move, no piece chosen
             }
 
-            console.log(`In the Pawn sending to emit => ${chosenPiece ?? this.state.promotes}`)
-
-            eventBus.emit(`setStates-${this.props.i}-${this.props.j}`, {
-                type: chosenPiece ?? this.state.promotes,
-                isPieceWhite: this.props.isWhite,
-                posX: this.x + moveX,
-                posY: this.y + moveY,
-            }); // immediately change pieceType
+            if( !premove ) { // changes piece type
+                eventBus.emit(`setStates-${this.props.i}-${this.props.j}`, {
+                    type: chosenPiece ?? this.state.promotes,
+                    isWhite: this.props.isWhite,
+                    i: this.x + moveX,
+                    j: this.y + moveY,
+                }); // in case of premove piece changes too fast
+            }
         }
-
-        if( this.y === boardSize - 1 || this.y === 0 )
-            return ; // tego calla nie powinno w ogóle być lol
         
         const lastMove = moveHistory.current.at(-1)?.Pawn;
         const secondLastMove = moveHistory.current.at(-2)?.Pawn?.finalSquares;
     
-        if( 
+        if(
             Math.abs(moveX) * moveY === this.direction && // diagonal move
             secondLastMove?.x === this.x && secondLastMove?.y === this.y && // previous ally move was with this pawn
-            lastMove?.finalSquares?.x === this.x + moveX && lastMove?.finalSquares?.y === this.y && // previous enemy move was to allow enpassant
-            lastMove?.move?.y === -2*this.direction && 
+            (premove || (lastMove?.finalSquares?.x === this.x + moveX && lastMove?.finalSquares?.y === this.y)) && // previous enemy move was to allow enpassant
+            (premove || lastMove?.move?.y === -2*this.direction) && 
             !this.isAtCheck(moveX, moveY)
         ) {
-            if(!justChecking) {
+            if(!justChecking && !premove) {
                 document.querySelector(`#square-${this.x + moveX}-${this.y}`).replaceChildren();
                 playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces'] = enemyPieces.filter(p => p.current.x !== this.x + moveX || p.current.y !== this.y);
             }
-        
+
             return true; // pawn takes enPassant allowed
         }
 

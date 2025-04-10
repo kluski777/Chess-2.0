@@ -13,7 +13,6 @@ const notFoundEmailPrefix = 'Your'
 const formStyle = {
     margin: '0px',
     width: '50%',
-    transform: 'translateX(100px)',
 }
 
 export const LoggingContainer = () => {

@@ -47,14 +47,14 @@ export const handleRequest = async (dbClient, req, res) => {
                 res.end(JSON.stringify({message: 'User not found or wrong password'}));
             }
         } else if(urlRequest.path.startsWith('/pairing')) {
-            const userFound = await dbClient.db('chess').collection(`queue-${urlRequest.query.format}`)
-            .findOneAndDelete({$and: [{user: urlRequest.query.user}, {opponent: {$ne: ''}}]});
-            if(userFound?.opponent) {
+            const userFound = await dbClient.db('chess')
+                .collection(`queue-${urlRequest.query.format}`)
+                .findOneAndDelete({$and: [{user: urlRequest.query.user}, {opponent: {$ne: {}}}]});
             
-                res.writeHead(200, {'Content-Type': 'application/json'});
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            if(userFound?.opponent) {
                 res.end(JSON.stringify({message: 'oponent info', opponent: userFound.opponent}));
             } else {
-                res.writeHead(200);
                 res.end(JSON.stringify({message: 'User not found'}));
             }
         } else {

@@ -1,43 +1,63 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { Box } from '@chakra-ui/react';
-import { useThemeContext } from '../Contexts/themeContext';
 import { useMoveMarkersContext } from '../Contexts/moveMarkersContext';
+import { useGameContext } from '../Contexts/gameContext';
+import { useThemeContext } from '../Contexts/themeContext';
+import isEqual from 'fast-deep-equal';
 import { Dot } from './Dot';
 
-const squareStyle = {
-  height: '100%',
-  width: '100%',
-  aspectRatio: '1/1',
-}
-
-const blackBrightColor = 'rgb(60, 60, 120)';
-const blackDarkColor = 'rgb(40, 40, 90)';
-// const blackLeftClickedColor = 'rgb(70, 120, 70)';
-// const blackRightClickedColor = 'rgb(240, 60, 60)';
-
-const whiteBrightColor = 'white';
-const whiteDarkColor = 'gray';
-// const whiteLeftClickedColor = 'rgb(255, 150, 150)';
-// const whiteRightClickedColor = 'red';
+export const setTiles = {}
 
 export const Tile = ({i, j, children, ...props}) => {
+  const [tileColor, setTileColor] = useState('default');
+  const { markerPositions } = useMoveMarkersContext();
   const thisElementRef = useRef(null);
   const theme = useThemeContext();
-  const { markerPositions } = useMoveMarkersContext();
-  const [tileColor, setTileColor] = useState((i%2 === 0 && j%2 === 0) || (i%2 === 1 && j%2 === 1) ? blackBrightColor : whiteBrightColor);
-  
+  const {gameEvents: {isWhiteToMove}, moveHistory} = useGameContext();
+
+  const colors = {
+    white: {
+      default: theme.isBright ? '#2D5A27' : '#1A3816',
+      red: theme.isBright ? '#FF0000' : '#990000',
+      moved: theme.isBright ? '#4CAF50' : '#388E3C',
+      premove: theme.isBright ? '#4651AA' : '#202080',
+    },
+    black: {
+      default: theme.isBright ? '#CCE6CF' : '#A9C484',
+      red: theme.isBright ? '#FF0000' : '#990000',
+      moved: theme.isBright ? '#8BC34A' : '#689F38',
+      premove: theme.isBright ? '#4651AA' : '#202080',
+    }
+  };
+
+  const squareStyle = {
+    height: '100%',
+    width: '100%',
+    aspectRatio: '1/1',
+    backgroundColor: colors[(i + j) % 2 === 0 ? 'white' : 'black'][tileColor],
+  };
+
+  const rightClick = (e, customArg = '') => {
+    if( !customArg ) {
+      e?.preventDefault();
+      e?.stopPropagation(); // Need so that only one square gets highlighted
+      setTileColor(color => color === 'red' ? 'default' : 'red');
+    } else {
+      setTileColor(customArg);
+    }
+  }
+
   useEffect(() => {
-    if(tileColor === blackBrightColor && !theme.isBright){
-      setTileColor(blackDarkColor);
-    } else if(tileColor === blackDarkColor && theme.isBright){
-      setTileColor(blackBrightColor);
+    if( isEqual( Object.values(moveHistory.current.at(-1) ?? {})[0]?.finalSquares, {x: i, y: j}) ) {
+      setTileColor('moved');
+    } else {
+      setTileColor('default');
     }
-    if(tileColor === whiteBrightColor && !theme.isBright){
-      setTileColor(whiteDarkColor);
-    } else if(tileColor === whiteDarkColor && theme.isBright){
-      setTileColor(whiteBrightColor);
-    }
-  }, [theme, tileColor]);
+  }, [isWhiteToMove, moveHistory, i, j]);
+
+  useEffect(() => {
+    setTiles[`${i}-${j}`] = rightClick;
+  }, [i, j]);
 
   return (
     <Box
@@ -48,6 +68,7 @@ export const Tile = ({i, j, children, ...props}) => {
       position='relative'
       backgroundColor={tileColor}
       border='1px solid rgb(0, 0, 0)'
+      onContextMenu={rightClick}
     >
       <div style={squareStyle} id={`square-${i}-${j}`} key={`square-${i}-${j}`}>
         {children}

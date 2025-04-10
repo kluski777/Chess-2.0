@@ -18,131 +18,108 @@ export const HomePage = () => {
   const logState = useLogContext();
   const theme = useThemeContext();
   const navigate = useNavigate();
-  
+
   const ButtonWrapper = ({ children, id, color, timeFormat, hoverColor}) => {
     const [isLoading, setIsLoading] = React.useState(true);
-    const loadingRef = React.useRef(true);
     const intervalID = React.useRef(null);
     
     const clearCurrentInterval = () => {
         if (intervalID.current) {
-            clearInterval(intervalID.current);
-            intervalID.current = null;
+          console.log("Clearing current interval...");
+          clearInterval(intervalID.current);
+          intervalID.current = null;
         }
     };
 
-    // Clear interval on unmount
     React.useEffect(() => {
-        return () => {
-          if (intervalID.current) {
-              clearInterval(intervalID.current);
-              intervalID.current = null;
-          }
-        };
+      clearCurrentInterval();
+      return clearCurrentInterval; // tylko to wsm
     }, []);
-
-    React.useEffect(() => {
-      if( intervalID.current ) {
-        clearCurrentInterval();
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [logState.logState.userInfo]);
 
     const opponentFound = () => {
       clearCurrentInterval();
-      setIsLoading(true);
+      setIsLoading(false);
+      deleteRecord();
       navigate(`/Game?timeformat=${id}`);
     }
+    
+    const deleteRecord = () => {
+      fetch(`http://localhost:5500/pairing?format=${id}`, { // CHECKED - being run every time after pairing
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          user: logState.logState.userInfo.user,
+        })
+      });
+    }
 
-    const handleButtonClick = async (e) => {
-        // Clear any existing interval first
-        clearCurrentInterval();
-        setIsLoading(prev => !prev);
-        loadingRef.current = !loadingRef.current;
+    const handleButtonClick = async (_) => {
+      setIsLoading(val => !val);
+      
+      if(!intervalID.current) {
+        const dataFrom = await fetch(`http://localhost:5500/pairing?format=${id}`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            user: logState.logState.userInfo.user,
+            rating: logState.logState.userInfo.rating.toString(),
+          }),
+        })
+        .then(response => response.json())
+        .catch(error => console.log(`Following error while POSTING pairing ${error}`));
 
-        if(!loadingRef.current) {
-            const dataFrom = await fetch(`http://localhost:5500/pairing?format=${id}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    user: logState.logState.userInfo.user,
-                    rating: logState.logState.userInfo.rating.toString(),
-                })
-            })
-            .then(response => response.json())
-            .catch(error => console.log(`Following error while POSTING pairing ${error}`));
+        if(!dataFrom?.opponent) { // waiting to find the opponent
+          intervalID.current = setInterval(async () => {
+            try {
+              const opponentInfo = await fetch(
+                `http://localhost:5500/pairing?format=${id}&user=${logState.logState.userInfo.user}`, {
+                  method: 'GET',
+                  headers: {'Content-Type': 'application/json'},
+                }
+              ).then(response => response.json());
 
-            if(!dataFrom?.opponent && !intervalID.current) {  // Check if interval doesn't exist
-                intervalID.current = setInterval(async () => {
-                    // Only proceed if we're still loading and interval hasn't been cleared
-                    try {
-                        const opponentInfo = await fetch(
-                            `http://localhost:5500/pairing?format=${id}&user=${logState.logState.userInfo.user}`,
-                            {
-                                method: 'GET',
-                                headers: { 'Content-Type': 'application/json' },
-                            }
-                        ).then(response => response.json());
-
-                        if (opponentInfo?.opponent?.user?.length > 0) {
-                          logState.setLogState({opponent: opponentInfo.opponent, isUserWhite: true, boardSize: 8}); // to sie zmieni
-                          opponentFound();
-                        }
-                    } catch (error) {
-                        console.log(error);
-                        clearCurrentInterval();
-                    }
-                }, 1000);
-            } else if(dataFrom?.opponent) {
-              logState.setLogState({opponent: dataFrom.opponent, isUserWhite: false, boardSize: 8}); // boardSize sie zmeini
-              opponentFound();
-            } else {
+              if (opponentInfo?.opponent?.user?.length > 0) {
+                logState.setLogState({opponent: opponentInfo.opponent, isUserWhite: true, boardSize: 8});
+                opponentFound();
+              }
+            } catch (error) {
+              console.log(error);
               clearCurrentInterval();
             }
-        } else {
-            try {
-                fetch(`http://localhost:5500/pairing?format=${id}`, {
-                    method: 'DELETE',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        user: logState.logState.userInfo.user,
-                        rating: logState.logState.userInfo.rating.toString(),
-                    })
-                });
-            } catch (error) {
-                console.log("Error deleting stuff from the server");
-                console.log(error);
-            }
+          }, 1000);
+        } else { // opponent fetched in 1st attempt
+          logState.setLogState({opponent: dataFrom.opponent, isUserWhite: false, boardSize: 8});
+          opponentFound();
         }
-
-        if (custom) {
-            e.preventDefault();
-        }
+      } else {
+        clearCurrentInterval();
+        deleteRecord();
+      }
     };
 
     return <Button
-        color={color}
-        _hover={{ bg: hoverColor }}
-        id={id}
-        variant="outline"
-        fontSize="26px"
-        fontFamily='Arial'
-        fontWeight='900'
-        width="100%"
-        px="10"
-        py="20"
-        borderColor="teal.200"
-        onClick={handleButtonClick}
-      >
-        {isLoading ?
-          <>
-            {children}
-            <br/>
-            {timeFormat}
-          </> : 
-          <div className="loader"/>
-        }
-      </Button>;
+      color={color}
+      _hover={{ bg: hoverColor }}
+      id={id}
+      variant="outline"
+      fontSize="26px"
+      fontFamily='Arial'
+      fontWeight='900'
+      width="100%"
+      px="10"
+      py="20"
+      borderColor="teal.200"
+      onClick={handleButtonClick}
+    >
+      {isLoading ?
+        <>
+          {children}
+          <br/>
+          {timeFormat}
+        </> : 
+        <div className="loader"/>
+      }
+    </Button>;
   };
 
   const BulletGameButton = ({children, id}) => {
@@ -183,6 +160,7 @@ export const HomePage = () => {
       display="flex"
       flexDirection="row"
       alignItems="center"
+      justifyContent="center"
       backgroundImage={theme.isBright ? brightBackground : darkBackground}
       backgroundRepeat="Repeat"
       backgroundSize="100px"
@@ -192,8 +170,6 @@ export const HomePage = () => {
         opacity={0.9}
         position='relative'
         width='75%'
-        left='calc((100% + 200px)/2)'
-        transform='translateX(-50%)'
         border='5px solid gray.800'
         marginBottom='25px'
         backgroundColor={theme.isBright ? 'gray.300' : 'gray.600'}
@@ -209,7 +185,7 @@ export const HomePage = () => {
                         variant={ !custom ? 'solid' : 'ghost' }
                         colorScheme={firstButtonOption === 'A' ? 'teal' : firstButtonOption === 'B' ? 'green' : 'red'}
                         color={ !custom || theme.isBright ? 'black' : 'white' }
-                        fontSize={'xl'}
+                        fontSize='xl'
                         width='100%'
                         onClick={() => {
                           if(!custom)
@@ -228,7 +204,7 @@ export const HomePage = () => {
                         variant={ custom ? 'solid' : 'ghost' }
                         width='100%'
                         colorScheme='blue'
-                        fontSize={'xl'}
+                        fontSize='xl'
                         color={ custom || theme.isBright ? 'black' : 'white' }
                         onClick={() => setCustom(true)}
                         px='35%'
@@ -285,7 +261,7 @@ export const HomePage = () => {
         >
           <Box
             left='50%'
-            transform='translateX(calc(-50% + 100px))'
+            transform='translateX(-50%)'
             position='absolute'
             textAlign='center'
             top='20%'

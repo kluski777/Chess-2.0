@@ -1,14 +1,14 @@
 import { moveFunctions } from "../Game/PieceContainer";
 import { boardSize } from "../Contexts/LogContext";
-import { gameStates } from "../Contexts/gameContext";
 import { timeControl } from "../Game/InfoTab";
 
 export class WebSocketClient { // najpierw dajmy tak żeby user grał tylko jedną partię na raz potem się zmieni
-    constructor(url) {
+    constructor(url, usePremove) {
         this.url = url;
         this.ws = null;
         this.isTransitioning = false;
         this.lastTimestamp = null;
+        this.premove = usePremove;
     }
 
     async convert2JSON(message) {
@@ -37,14 +37,13 @@ export class WebSocketClient { // najpierw dajmy tak żeby user grał tylko jedn
                 } else if(messageJSON.type === 'move') {
                     const [content] = Object.values(messageJSON.body);
                     const key = `${content.finalSquares.x - content.move.x}-${boardSize - content.finalSquares.y + content.move.y - 1}`;
-                    
-                    gameStates.set(prev => ({...prev, isWhiteToMove: !prev.isWhiteToMove}));
+
                     timeControl(messageJSON.oldTimestamp - Date.now());
-                    
-                    console.log("Sending...");
-                    console.trace(messageJSON?.promotes ?? '');
 
                     await moveFunctions.functions[key](content.move.x, -content.move.y, messageJSON?.promotes ?? '');
+                    await this.premove.applyPremove(true); // move auf player who made a premove
+                } else if(messageJSON.type === 'premove') {
+                    this.premove.addPremove( messageJSON.body, false );
                 }
             } catch(error) {
                 console.log("Error caught in wsClass.js:", error);
@@ -80,7 +79,10 @@ export class WebSocketClient { // najpierw dajmy tak żeby user grał tylko jedn
 
     send(object) {
         if (this.ws?.readyState === this.ws.OPEN) {
-            this.ws.send( JSON.stringify({...object, oldTimestamp: Date.now()}) ); // data is already a JSON / string which indicates it's JSON
+            let toSend = object;
+            if( object.type === 'move' )
+                toSend = ({...object, oldTimestamp: Date.now()});
+            this.ws.send( JSON.stringify(toSend) );
         }
     }
 }

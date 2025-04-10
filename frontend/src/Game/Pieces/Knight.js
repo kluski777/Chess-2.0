@@ -20,8 +20,8 @@ export class Knight extends Piece {
             .map(j => [i + this.x, j + this.y]));
     }
 
-    canMove(moveX, moveY) {
-        return Math.abs(moveX * moveY) === 2 && this.validateMove(moveX, moveY, false);
+    canMove(moveX, moveY, premove = false) {
+        return Math.abs(moveX * moveY) === 2 && (premove || this.validateMove(moveX, moveY, false));
             // Only knight moves multiplied give 
             // nie jest poza planszą
             // sprawdzenie czy król nie będzie szachowany

@@ -14,9 +14,10 @@ import { useLogContext } from '../Contexts/LogContext'
 import { MoveMarkersContextProvider } from '../Contexts/moveMarkersContext';
 import InfoTab from './InfoTab';
 import { WebSocketClient } from '../HandyComponents/wsFront';
+import { usePremove } from './utils/globalFunctions';
 
 class Chessboard extends React.PureComponent {
-  constructor({logState}) { // tu musi pójść uogólnienie - zmiana wszystkiego tak naprawdę
+  constructor({logState, premove}) { // tu musi pójść uogólnienie - zmiana wszystkiego tak naprawdę
     super();
     this.state = {
       windowDim: {
@@ -26,15 +27,17 @@ class Chessboard extends React.PureComponent {
       widthAndHeightValue: 0,
     };
 
-    this.ws = new WebSocketClient(`ws://localhost:5500/Game?username=${logState.userInfo.user}&opponent=${logState.opponent.user}`, boardSize);
+    this.premove = premove
 
+    this.ws = new WebSocketClient(`ws://localhost:5500/Game?username=${logState.userInfo.user}&opponent=${logState.opponent.user}`, premove);
+    
     this.logState = logState;
-
+    
     this.state.widthAndHeightValue = this.state.windowDim.width > this.state.windowDim.height ? 0.75*this.state.windowDim.height : 0.75*this.state.windowDim.width;
-
+    
     this.chessboardRef = React.createRef();
   }
-
+  
   onResize = (_, {size}) => {
     this.setState({widthAndHeightValue: size.width});
   }
@@ -123,12 +126,13 @@ class Chessboard extends React.PureComponent {
                               i={i}
                               j={j}
                             >
-                              {beginPositions['variant a'][j][i] && 
+                              {beginPositions['variant a'][j][i]?.type && 
                                 <PieceContainer
                                   key={`piece-${i}-${j}`}
                                   i={i}
                                   j={j}
                                   tileSize={widthAndHeightValue/boardSize}
+                                  premove={this.premove}
                                   connection={this.ws}
                                 />
                               }
@@ -161,11 +165,12 @@ class Chessboard extends React.PureComponent {
 
 export const Game = ({...props}) => {
   const {logState} = useLogContext();
+  const {addPremove, applyPremove, getPremoveHistory} = usePremove();
 
   // potem się doda różne wersje gry które bd iść razem z propsami.
   return (
     <>
-      <Chessboard logState={logState}/>
+      <Chessboard logState={logState} premove={{addPremove, applyPremove, getPremoveHistory}}/>
     </>
   );
 }

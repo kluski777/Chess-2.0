@@ -48,8 +48,8 @@ export class Rook extends Piece {
         return moves;
     }
 
-    canMove(moveX, moveY) {
-        return moveX * moveY === 0 && this.validateMove(moveX, moveY);
+    canMove(moveX, moveY, premove = false) {
+        return moveX * moveY === 0 && (premove || this.validateMove(moveX, moveY));
     }
 
     getPosition(){

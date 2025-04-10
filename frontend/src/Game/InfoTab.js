@@ -50,12 +50,12 @@ const InfoTab = ({height, timeFormat}) => {
             const newTime = Math.max(0, initialTime - elapsed);
             
             // Update less frequently when time is > 20 seconds
-            if (newTime > 20_000 && isUserWhite === gameEvents.isWhiteToMove ) {
+            if ( newTime > 20_000 && isUserWhite === gameEvents.isWhiteToMove ) {
                 setTime(newTime);
                 frameId = setTimeout(() => {
                     requestAnimationFrame(animate);
                 }, 1000);
-            } else if(isUserWhite !== gameEvents.isWhiteToMove) {
+            } else if( isUserWhite !== gameEvents.isWhiteToMove ) {
                 // More precise updates for last 20 seconds
                 setTime(newTime);
                 frameId = requestAnimationFrame(animate);
@@ -136,13 +136,13 @@ const InfoTab = ({height, timeFormat}) => {
 
     const TimeToComponent = (timeState) => {
         let timeOnLeft, timeOnRight, timeTrouble = false;
-        
+
         if( timeState < 20*1000 ) {
             timeTrouble = true;
-            timeOnLeft = Math.floor( timeState / 1000 ); // seconds
+            timeOnLeft = Math.floor(timeState / 1000);  // seconds
             timeOnRight = Math.floor(timeState % 1000); // miliseconds
         } else {
-            timeOnLeft = Math.floor( timeState / (60 * 1000) ); // minutes
+            timeOnLeft = Math.floor(timeState / (60 * 1000)); // minutes
             timeOnRight = timeState - timeOnLeft * 60 * 1000; // seconds
         }
 
@@ -170,20 +170,20 @@ const InfoTab = ({height, timeFormat}) => {
     return <div style={{...container, height: `${height}px`}}>
         <div style={{...tabStyle, ...playerStyle}}>
             <div style={captionContainer}>
-                <h2 style={headingStyle}>{opponent.user}</h2>
-                <h2 style={headingStyle}>{opponent.rating}</h2>
+                <h2 style={headingStyle}>{userInfo.user}</h2>
+                <h2 style={headingStyle}>{userInfo.rating}</h2>
             </div>
             <div style={clock}>
-                {TimeToComponent(userTime)}
+                {TimeToComponent(opponentTime)}
             </div>
         </div>
         <div style={{...tabStyle, ...opponentStyle}}>
             <div style={clock}>
-                {TimeToComponent(opponentTime)}
+                {TimeToComponent(userTime)}
             </div>
             <div style={captionContainer}>
-                <h2 style={headingStyle}>{userInfo.user}</h2>
-                <h2 style={headingStyle}>{userInfo.rating}</h2>
+                <h2 style={headingStyle}>{opponent.user}</h2>
+                <h2 style={headingStyle}>{opponent.rating}</h2>
             </div>    
         </div>
     </div>;

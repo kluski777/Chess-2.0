@@ -6,12 +6,41 @@
             "request": "launch",
             "name": "Launch Brave against localhost",
             "url": "http://localhost:3000",
-            "webRoot": "${workspaceFolder}",
-            "runtimeExecutable": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",  // Windows path
+            "webRoot": "${workspaceFolder}/frontend",
+            "runtimeExecutable": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
-                "webpack:///src/*": "${webRoot}/src/*"
+                "webpack:///src/*": "${webRoot}/src/*",
+                "webpack:///./src/*": "${webRoot}/src/*"
             }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Backend",
+            "skipFiles": ["<node_internals>/**"],
+            "program": "${workspaceFolder}/backend/server.mjs",
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "NODE_ENV": "development",
+                "PORT": "5500"
+            },
+            "restart": true,
+            "runtimeExecutable": "npx",
+            "runtimeArgs": ["nodemon"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**"
+            ],
+            "outputCapture": "std"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Full Stack: Frontend + Backend",
+            "configurations": ["Launch Brave against localhost", "Debug Backend"]
         }
     ]
 }

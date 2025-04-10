@@ -1,10 +1,10 @@
 import React from 'react';
 import { Piece } from './Piece';
 import { boardSize } from '../../Contexts/LogContext';
-import "../piece.css"
+import "../piece.css";
 
 import blackKing from '../../Assets/blackPieces/king.png';
-import whiteKing from '../../Assets/whitePieces/king.png'
+import whiteKing from '../../Assets/whitePieces/king.png';
 
 export class King extends Piece {
     type = 'King';
@@ -15,14 +15,10 @@ export class King extends Piece {
         this.possibleMoves = () => this.attack(true);
     }
 
-    updateCheck(checkValue) { // AI to zrobiło idk jak to działa
+    updateCheck(checkValue) { // Needed for animation to work properly.
+        this.props.pointer.current.classList.remove('check-style');
         if(checkValue) {
-            this.props.pointer.current.classList.remove('check-style');
-            // Force a reflow
-            void this.props.pointer.current.offsetWidth;
             this.props.pointer.current.classList.add('check-style');
-        } else {
-            this.props.pointer.current.classList.remove('check-style');
         }
     }
 
@@ -30,20 +26,19 @@ export class King extends Piece {
         return [-1, 0, 1].flatMap(i => [-1, 0, 1].filter(j => (i !== 0 || j !== 0) && (!checkCheck || this.validateMove(i, j)) ).map(j => [i + this.x, j + this.y]));
     }
 
-    canMove(moveX, moveY) {
+    canMove(moveX, moveY, premove = false) {
         const {playerPieces, gameEvents: {check}, moveHistory} = this.context;
         const enemyPieces = playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces'];
 
         if( // można to zrobić w jednym ifie.
             moveX === -2 &&
-            !moveHistory.current.some(p => (p.King ?? false) && (this.isPlayer ? p.King?.finalSquares?.y - p.King?.move?.y === boardSize - 1 : p.King?.finalSquares?.y === p.King?.move?.y) ) &&
+            !moveHistory.current.some(p => p?.King && (this.isPlayer ? p.King?.finalSquares?.y - p.King?.move?.y === boardSize - 1 : p.King?.finalSquares?.y === p.King?.move?.y) ) &&
             !moveHistory.current.filter(p => p.Rook).some(piece => (this.isPlayer ? (piece.Rook?.finalSquares?.y - piece.Rook?.move?.y  === boardSize - 1) : (piece.Rook?.finalSquares?.y === piece.Rook?.move?.y)) && piece.Rook?.finalSquares?.x === piece.Rook?.move?.x) &&
-            !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x - 1 && y === this.y) ) && 
-            !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x - 2 && y === this.y) ) &&
-            this.validateMove(moveX, moveY) &&
+            (premove || !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x - 1 && y === this.y) )) && 
+            (premove || !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x - 2 && y === this.y) )) &&
+            (premove || this.validateMove(moveX, moveY)) &&
             !check
         ) {
-            
             playerPieces.current[this.isPlayer ? 'allyPieces' : 'enemyPieces']
                 .find(p => p.current.x === 0 && (this.isPlayer ? p.current.y === boardSize - 1 : p.current.y === 0))
                 .current.x += 3;
@@ -56,9 +51,9 @@ export class King extends Piece {
             moveX === 2 && // to do ogólnienia w chess960 nie zadziała
             !moveHistory.current.some(p => (p.King ?? false) && (this.isPlayer ? p.King?.finalSquares?.y - p.King?.move?.y === boardSize - 1 : p.King?.finalSquares?.y === p.King?.move?.y) ) &&
             !moveHistory.current.filter(p => p.Rook).some(piece => this.isPlayer ? (piece.Rook?.finalSquares?.y - piece.Rook?.move?.y  === boardSize - 1) : (piece.Rook?.finalSquares?.y === piece.Rook?.move?.y) && piece.Rook?.finalSquares?.x === piece.Rook?.move?.x) &&
-            !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x + 1 && y === this.y) ) && 
-            !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x + 2 && y === this.y) ) &&
-            this.validateMove(moveX, moveY) &&
+            (premove || !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x + 1 && y === this.y) )) && 
+            (premove || !enemyPieces.some(p => p.current.attack().some(([x, y]) => x === this.x + 2 && y === this.y) )) &&
+            (premove || this.validateMove(moveX, moveY)) &&
             !check
         ) {
             playerPieces.current[this.isPlayer ? 'allyPieces' : 'enemyPieces']
@@ -70,7 +65,7 @@ export class King extends Piece {
             document.querySelector(`#square-${boardSize - 1}-${this.isPlayer ? boardSize - 1 : 0}`).replaceChildren();
             return true;
         }
-        return (Math.abs(moveX) < 2 && Math.abs(moveY) < 2) && this.validateMove(moveX, moveY);
+        return (Math.abs(moveX) < 2 && Math.abs(moveY) < 2) && (premove || this.validateMove(moveX, moveY));
     }
 
     getPosition(){

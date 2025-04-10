@@ -19,8 +19,6 @@ export class Bishop extends Piece {
         const {playerPieces: {current}} = this.context;
         const pieces = [...current.allyPieces, ...current.enemyPieces];
 
-        const enemyPieces = current[this.isPlayer ? 'enemyPieces' : 'allyPieces'];
-
         let moves = [];
         let directionContinue = {upLeft: true, upRight: true, downRight: true, downLeft: true};
 
@@ -55,9 +53,8 @@ export class Bishop extends Piece {
         return moves;
     }
 
-
-    canMove(moveX, moveY) {
-        return Math.abs(moveX) === Math.abs(moveY) && this.validateMove(moveX, moveY);
+    canMove(moveX, moveY, premove = false) {
+        return Math.abs(moveX) === Math.abs(moveY) && (premove || this.validateMove(moveX, moveY));
     }
 
     getPosition(){
