@@ -27,9 +27,10 @@
 8. White moves only when it's his turn to do so [DONE].
 9. Add premoves:
     a> Lichess alike premoves. [DONE]
-    b> Rewrite PieceContainer.js to make it simplier.
-    c> unconditional premoves.
-    d> Stack all premoves including conditional premoves.
+    b> Rewrite PieceContainer.js to make it simplier. [DONE]
+    c> Premove with moving piece. [TERAZ]
+    d> unconditional premoves. [IF_POSSIBLE_MOVE]
+    e> Stack all premoves including conditional premoves.
 10. Add moves after clicking on a piece. [DONE]
 11. Change logging layout - it's quite ugly.
 12. After start dragging piece is centered. [DONE]

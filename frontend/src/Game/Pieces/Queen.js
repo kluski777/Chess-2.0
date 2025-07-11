@@ -25,7 +25,7 @@ export class Queen extends Piece {
     }
 
     canMove(moveX, moveY, premove = false) {
-        return (moveX * moveY === 0 || Math.abs(moveX) === Math.abs(moveY)) && (!premove && this.validateMove(moveX, moveY));
+        return (moveX * moveY === 0 || Math.abs(moveX) === Math.abs(moveY)) && (premove || this.validateMove(moveX, moveY));
     }
 
     getPosition(){

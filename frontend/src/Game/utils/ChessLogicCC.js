@@ -1,20 +1,24 @@
-import React from 'react';
 import { useGameContext } from '../../Contexts/gameContext';
+import { useMoveMarkersContext } from '../../Contexts/moveMarkersContext';
+import { useLogContext } from '../../Contexts/LogContext';
 import isEqual from 'fast-deep-equal';
 
+// Tu chyba
 export const moveFunctions = {
     functions: {},
     replaceFunction: function(keyBefore, keyAfter) {
-      if(this.functions[keyBefore]) {
-        const func = this.functions[keyBefore];
-        this.functions[keyAfter] = func;
+        if(this.functions[keyBefore]) {
+        this.functions[keyAfter] = this.functions[keyBefore];;
         delete this.functions[keyBefore];
-      }
+        }
     }
-  };
+};
 
-const ChessLogicCC = (pieceClass, ownRef) => { // tego ownRefa weź zrename'uj
+export const ChessLogicCC = (pieceClass, ownRef, premove, connection) => { // tego ownRefa weź zrename'uj
+    const { setUpdateFunction, markerPositions, setMarkerPositions } = useMoveMarkersContext();
     const {gameEvents, setGameEvents, moveHistory, playerPieces} = useGameContext();
+    const { logState: {isUserWhite} } = useLogContext();
+    const {addPremove, applyPremove} = premove;
 
     const isKingChecked = (allySide, enemySide) => {
         const enemyKing = playerPieces.current[enemySide].find(p => p.current.type === 'King');
@@ -33,12 +37,12 @@ const ChessLogicCC = (pieceClass, ownRef) => { // tego ownRefa weź zrename'uj
     const moveFunction = async (moveX, moveY, promotes = '') => {
         let condition = promotes ? await pieceClass?.current.canMove(moveX, moveY, false, promotes) : await pieceClass?.current.canMove(moveX, moveY);
 
-        if ( !condition ) // move illegal 
+        if ( !condition ) // move illegal
             return false;
 
         const oldSquare = document.querySelector(`#square-${pieceClass.current.x}-${pieceClass.current.y}`);
 
-        // w przypadku premove'a tego to ja nie chce
+        // W przypadku premove'a ja to chce w
         pieceClass.current.x += moveX;
         pieceClass.current.y += moveY;
 
@@ -115,8 +119,8 @@ const ChessLogicCC = (pieceClass, ownRef) => { // tego ownRefa weź zrename'uj
 
                 connection.send({type: 'premove', body: moveObject});
 
-                addPremove(moveObject, true);
                 // graficzny ruch
+                addPremove(moveObject, true);
             }
         }
     }

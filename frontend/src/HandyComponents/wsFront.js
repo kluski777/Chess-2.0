@@ -1,4 +1,4 @@
-import { moveFunctions } from "../Game/PieceContainer";
+import { moveFunctions } from "../Game/utils/ChessLogicCC";
 import { boardSize } from "../Contexts/LogContext";
 import { timeControl } from "../Game/InfoTab";
 
